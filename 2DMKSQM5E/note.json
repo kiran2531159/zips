@@ -1,0 +1,148 @@
+{
+  "paragraphs": [
+    {
+      "text": "%spark\nimport org.apache.spark.sql._\n\nval fac_driver \u003dspark.conf.get(\"spark.sql.driver\")\nval fac_url\u003dspark.conf.get(\"spark.jdbc\")\nval fac_database \u003d spark.conf.get(\"spark.db\")\nval fac_username \u003d spark.conf.get(\"spark.user\")\nval fac_password \u003d spark.conf.get(\"spark.pass\")\nval fac_grp_tables  \u003d \"\"\"(select GRGR_ID ,GRGR_NAME,GRGR_CK from fabncpr0..CMC_GRGR_GROUP GRGR) a \"\"\" \nval fac_grp_jdbcDF \u003d sqlContext.read.format(\"jdbc\").option(\"driver\",fac_driver).option(\"url\",fac_url).option(\"databaseName\", fac_database).option(\"user\", fac_username).option(\"password\",fac_password).option(\"dbtable\", fac_grp_tables).load()\nfac_grp_jdbcDF.createOrReplaceTempView(\"facets_group_data\")\nval fac_clcl_tables  \u003d \"\"\"(\n    select \ncount(1) AS Claims_Count, sum(CLCL.CLCL_TOT_CHG) AS Total_Charge, sum(CLCL.CLCL_TOT_PAYABLE) AS Total_Payable,\nCLCL.CLCL_CUR_STS, CLCL.CLCL_INPUT_DT, CLCL.CSCS_ID, CLCL.CSPI_ID, CLCL.PDPD_ID, CLCL.NWPR_PFX, CLCL.NWNW_ID,CLCL.GRGR_CK\nfrom fabncpr0..CMC_CLCL_CLAIM  CLCL \nWHERE \nCLCL.CLCL_CUR_STS IN (01,02) AND\nCLCL.CSPD_CAT IN (\u0027M\u0027)  \nGROUP BY\nCLCL.CLCL_CUR_STS, CLCL.CLCL_INPUT_DT, CLCL.CSCS_ID, CLCL.CSPI_ID, CLCL.PDPD_ID, CLCL.NWPR_PFX, CLCL.NWNW_ID ,CLCL.GRGR_CK\n    ) b \"\"\" \n    \nval fac_grp_jdbcDF \u003d sqlContext.read.format(\"jdbc\").option(\"driver\",fac_driver).option(\"url\",fac_url).option(\"databaseName\", fac_database).option(\"user\", fac_username).option(\"password\",fac_password).option(\"dbtable\", fac_clcl_tables).load()\nfac_grp_jdbcDF.createOrReplaceTempView(\"facets_claim_data\")\n\n\n//PMHS\nval pmhs_driver \u003dspark.conf.get(\"spark.sql.driver\")\nval pmhs_url\u003dspark.conf.get(\"spark.jdbc\")\nval pmhs_database \u003d spark.conf.get(\"spark.db\")\nval pmhs_username \u003d spark.conf.get(\"spark.user\")\nval pmhs_password \u003d spark.conf.get(\"spark.pass\")\n\n\nval pmhs_clcl_tables  \u003d \"\"\"(\n    select * from fabncdv2custom.dbo.FACETS_PMHS_TEST\n    ) c \"\"\" \n    \nval fac_grp_jdbcDF \u003d sqlContext.read.format(\"jdbc\").option(\"driver\",pmhs_driver).option(\"url\",pmhs_url).option(\"databaseName\", pmhs_database).option(\"user\", pmhs_username).option(\"password\",pmhs_password).option(\"dbtable\", pmhs_clcl_tables).load()\nfac_grp_jdbcDF.createOrReplaceTempView(\"power_claim_data\")\n\n\n//var final_string\u003d\"select * from facets_group_data where GRGR_ID \u003d \"\n\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-17 09:37:55.804",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {
+          "Goup ID": "14149005"
+        },
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "java.net.ConnectException: Connection timed out: connect\r\n\tat java.net.DualStackPlainSocketImpl.connect0(Native Method)\r\n\tat java.net.DualStackPlainSocketImpl.socketConnect(DualStackPlainSocketImpl.java:79)\r\n\tat java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:350)\r\n\tat java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:206)\r\n\tat java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:188)\r\n\tat java.net.PlainSocketImpl.connect(PlainSocketImpl.java:172)\r\n\tat java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392)\r\n\tat java.net.Socket.connect(Socket.java:589)\r\n\tat org.apache.thrift.transport.TSocket.open(TSocket.java:182)\r\n\tat org.apache.zeppelin.interpreter.remote.ClientFactory.create(ClientFactory.java:51)\r\n\tat org.apache.zeppelin.interpreter.remote.ClientFactory.create(ClientFactory.java:37)\r\n\tat org.apache.commons.pool2.BasePooledObjectFactory.makeObject(BasePooledObjectFactory.java:60)\r\n\tat org.apache.commons.pool2.impl.GenericObjectPool.create(GenericObjectPool.java:861)\r\n\tat org.apache.commons.pool2.impl.GenericObjectPool.borrowObject(GenericObjectPool.java:435)\r\n\tat org.apache.commons.pool2.impl.GenericObjectPool.borrowObject(GenericObjectPool.java:363)\r\n\tat org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess.getClient(RemoteInterpreterProcess.java:62)\r\n\tat org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess.callRemoteFunction(RemoteInterpreterProcess.java:133)\r\n\tat org.apache.zeppelin.interpreter.remote.RemoteInterpreter.interpret(RemoteInterpreter.java:228)\r\n\tat org.apache.zeppelin.notebook.Paragraph.jobRun(Paragraph.java:437)\r\n\tat org.apache.zeppelin.scheduler.Job.run(Job.java:188)\r\n\tat org.apache.zeppelin.scheduler.RemoteScheduler$JobRunner.run(RemoteScheduler.java:307)\r\n\tat java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)\r\n\tat java.util.concurrent.FutureTask.run(FutureTask.java:266)\r\n\tat java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$201(ScheduledThreadPoolExecutor.java:180)\r\n\tat java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)\r\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\r\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\r\n\tat java.lang.Thread.run(Thread.java:748)\r\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1533738966906_1826417820",
+      "id": "20180808-103606_1421955969",
+      "dateCreated": "2018-08-08 10:36:06.906",
+      "dateStarted": "2018-09-17 09:37:55.854",
+      "dateFinished": "2018-09-17 09:38:16.895",
+      "status": "ERROR",
+      "errorMessage": "java.net.ConnectException: Connection timed out: connect\r\n\tat java.net.DualStackPlainSocketImpl.connect0(Native Method)\r\n\tat java.net.DualStackPlainSocketImpl.socketConnect(DualStackPlainSocketImpl.java:79)\r\n\tat java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:350)\r\n\tat java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:206)\r\n\tat java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:188)\r\n\tat java.net.PlainSocketImpl.connect(PlainSocketImpl.java:172)\r\n\tat java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392)\r\n\tat java.net.Socket.connect(Socket.java:589)\r\n\tat org.apache.thrift.transport.TSocket.open(TSocket.java:182)\r\n\tat org.apache.zeppelin.interpreter.remote.ClientFactory.create(ClientFactory.java:51)\r\n\tat org.apache.zeppelin.interpreter.remote.ClientFactory.create(ClientFactory.java:37)\r\n\tat org.apache.commons.pool2.BasePooledObjectFactory.makeObject(BasePooledObjectFactory.java:60)\r\n\tat org.apache.commons.pool2.impl.GenericObjectPool.create(GenericObjectPool.java:861)\r\n\tat org.apache.commons.pool2.impl.GenericObjectPool.borrowObject(GenericObjectPool.java:435)\r\n\tat org.apache.commons.pool2.impl.GenericObjectPool.borrowObject(GenericObjectPool.java:363)\r\n\tat org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess.getClient(RemoteInterpreterProcess.java:62)\r\n\tat org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess.callRemoteFunction(RemoteInterpreterProcess.java:133)\r\n\tat org.apache.zeppelin.interpreter.remote.RemoteInterpreter.interpret(RemoteInterpreter.java:228)\r\n\tat org.apache.zeppelin.notebook.Paragraph.jobRun(Paragraph.java:437)\r\n\tat org.apache.zeppelin.scheduler.Job.run(Job.java:188)\r\n\tat org.apache.zeppelin.scheduler.RemoteScheduler$JobRunner.run(RemoteScheduler.java:307)\r\n\tat java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)\r\n\tat java.util.concurrent.FutureTask.run(FutureTask.java:266)\r\n\tat java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$201(ScheduledThreadPoolExecutor.java:180)\r\n\tat java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)\r\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\r\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\r\n\tat java.lang.Thread.run(Thread.java:748)\r\n",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "\n%spark\nimport org.apache.spark.sql._\n//val options \u003d Seq((\"yes\",\"yes\"))\n//val load\u003dz.checkbox(\"Register \u0026 View Data\", options).mkString(\"\")\nvar final_string\u003d\"select * from facets_group_data where GRGR_ID \u003d \"\nvar group_id\u003dz.input(\"Goup ID\", \"14149005\")\n//z.show(sqlContext.sql(final_string+group_id))\n//z.show(sqlContext.sql(\n//    \"select power_claim_data.Total_Charge AS POWER_CLAIMS_AMOUNT ,facets_claim_data.Total_Charge as FACETS_CLAIMS_AMOUNT from power_claim_data,facets_group_data,facets_claim_data where //facets_group_data.GRGR_CK \u003d power_claim_data.GRGR_CK and facets_group_data.GRGR_CK \u003d facets_claim_data.GRGR_CK and facets_group_data.GRGR_ID \u003d\"+group_id+\" group by power_claim_data//.CLCL_INPUT_DT, facets_claim_data.CLCL_INPUT_DT\"\n    //   ))\n       z.show(sqlContext.sql(\" select power_claim_data.Total_Charge,power_claim_data.CLCL_INPUT_DT  from power_claim_data GROUP BY power_claim_data.Total_Charge,power_claim_data.CLCL_INPUT_DT UNION  select facets_claim_data.Total_Charge,facets_claim_data.CLCL_INPUT_DT from facets_claim_data GROUP BY facets_claim_data.CLCL_INPUT_DT,facets_claim_data.Total_Charge \"\n       ))\n//z.show(sqlContext.sql(\n //   \"select power_claim_data.Total_Charge AS POWER_CLAIMS_AMOUNT, from power_claim_data,facets_group_data where facets_group_data.GRGR_CK \u003d power_claim_data.GRGR_CK  and //facets_group_data.GRGR_ID \u003d\"+group_id\n  //      ))\n // z.show(sqlContext.sql(\" select power_claim_data.Total_Charge as power_claims  from power_claim_data  UNION  select facets_claim_data.Total_Charge as facets_claims from //facets_claim_data  \"\n      // ))\n      z.show(fac_grp_jdbcDF.foreach{println})",
+      "user": "anonymous",
+      "dateUpdated": "2018-08-14 11:22:32.015",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "Total_Charge": "string",
+                      "CLCL_INPUT_DT": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {
+          "Goup ID": "\u002714149005\u0027"
+        },
+        "forms": {
+          "Goup ID": {
+            "type": "TextBox",
+            "name": "Goup ID",
+            "displayName": "Goup ID",
+            "defaultValue": "14149005",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1533757195927_-2129601204",
+      "id": "20180808-153955_146257217",
+      "dateCreated": "2018-08-08 15:39:55.937",
+      "dateStarted": "2018-08-14 11:22:32.141",
+      "dateFinished": "2018-08-14 11:27:54.710",
+      "status": "ABORT",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-08-08 15:43:53.288",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1533757433288_-555691387",
+      "id": "20180808-154353_1434957836",
+      "dateCreated": "2018-08-08 15:43:53.288",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Claims_Comaprison_Report",
+  "id": "2DMKSQM5E",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "md:shared_process": [],
+    "sh:shared_process": [],
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

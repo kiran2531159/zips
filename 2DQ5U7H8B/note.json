@@ -1,0 +1,326 @@
+{
+  "paragraphs": [
+    {
+      "text": "import org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\nimport java.text.SimpleDateFormat\nimport java.util.Calendar\nimport java.sql.Date\nimport org.joda.time.DateTime\n//java.time.LocalDate.now\nvar Start_Date\u003dz.input(\"Claims start date\", \"01/01/2016\")\nvar End_Date\u003dz.input(\"Claims end date\", \"01/01/2017\")\n\nval reportPath\u003d\"file:///C:/Users/224597/Documents/CLAIMS/DATA/\"\nobject DateUtil {\n\n  private val dateFmt \u003d \"MMddyyyy\"\n\n  def today(): String \u003d {\n    val date \u003d new java.sql.Date(Calendar.getInstance().getTime().getTime())\n    val sdf \u003d new SimpleDateFormat(dateFmt)\n    sdf.format(date)\n  }\n\n  /*def yesterday(): String \u003d {\n    val calender \u003d Calendar.getInstance()\n    calender.roll(Calendar.DAY_OF_YEAR, -1)\n    val sdf \u003d new SimpleDateFormat(dateFmt)\n    sdf.format(calender.getTime())\n  }\n\n  def daysAgo(days: Int): String \u003d {\n    val calender \u003d Calendar.getInstance()\n    calender.roll(Calendar.DAY_OF_YEAR, -days)\n    val sdf \u003d new SimpleDateFormat(dateFmt)\n    sdf.format(calender.getTime())\n  }*/\n\n} \n\nobject FileName {\ndef facetsReport: String \u003d {\n    val a\u003dreportPath.concat(DateUtil.today())\n    a.concat(\"_FACETS.csv\")\n  }\ndef xcReport: String \u003d {\n    val c\u003dreportPath.concat(DateUtil.today())\n    c.concat(\"_FACETS_XC.csv\")\n  }\n}\nprintln(\"facets report \"+FileName.facetsReport)\nprintln(\"facets xc report \"+FileName.xcReport)\nval claimText \u003d sc.parallelize(IOUtils.toString(new URL(FileName.facetsReport),Charset.forName(\"utf8\")).split(\"\\n\"))\ncase class Claims(COUNT_OF_CLAIMS: Int,DATE: String ,CLCL_CUR_STS: String,WF_COUNT_OF_CLAIMS: Int,DATE_OF_WF: String,WF_CLCL_CUR_STS: String)\ncase class Claims_xc(COUNT_OF_CLAIMS: Int,DATE: String ,CLCL_CUR_STS: String,WF_COUNT_OF_CLAIMS: Int,DATE_OF_WF: String,WF_CLCL_CUR_STS: String)\n\n\nval claims \u003d claimText.map(s\u003d\u003es.split(\",\")).filter(s\u003d\u003es(0)!\u003d\"\\\"COUNT_OF_CLAIMS\\\"\").map(\n    s\u003d\u003eClaims(\n        s(0).toInt, //COUNT_OF_CLAIMS\n        s(1).replaceAll(\"\\\"\", \"\"),//DATE\n        s(2).replaceAll(\"\\\"\", \"\"),//,CLCL_CUR_STS\n        0,\" \",\" \"\n       // s(3).toInt,//WF_COUNT_OF_CLAIMS\n       // s(4).replaceAll(\"\\\"\", \"\"),//DATE_OF_WF\n       // s(5).replaceAll(\"\\\"\", \"\")//WF_CLCL_CUR_STS\n        )\n)\n\nclaims.toDF().registerTempTable(\"claim_facets\")\n\nval claims_wf \u003d claimText.map(s\u003d\u003es.split(\",\")).filter(s\u003d\u003es(0)!\u003d\"\\\"COUNT_OF_CLAIMS\\\"\").map(\n    s\u003d\u003eClaims(\n       // s(0).toInt, //COUNT_OF_CLAIMS\n       // s(1).replaceAll(\"\\\"\", \"\"),//DATE\n       // s(2).replaceAll(\"\\\"\", \"\"),//CLCL_CUR_STS\n        s(3).toInt,//WF_COUNT_OF_CLAIMS\n        s(4).replaceAll(\"\\\"\", \"\"),//DATE_OF_WF\n        s(5).replaceAll(\"\\\"\", \"\"),//WF_CLCL_CUR_STS\n        0,\" \",\" \"\n        )\n)\n\nclaims_wf.toDF().registerTempTable(\"claim_facets_wf\")\n\nval claimText_xc \u003d sc.parallelize(IOUtils.toString(new URL(FileName.xcReport),Charset.forName(\"utf8\")).split(\"\\n\"))\n\nval claims_xc \u003d claimText_xc.map(s\u003d\u003es.split(\",\")).filter(s\u003d\u003es(0)!\u003d\"\\\"COUNT_OF_CLAIMS_XC\\\"\").map(\n    s\u003d\u003eClaims_xc(\n        s(0).toInt, //COUNT_OF_CLAIMS\n        s(1).replaceAll(\"\\\"\", \"\"),//DATE\n        s(2).replaceAll(\"\\\"\", \"\"),//CLCL_CUR_STS\n        s(3).toInt,//WF_COUNT_OF_CLAIMS\n        s(4).replaceAll(\"\\\"\", \"\"),//DATE_OF_WF\n        s(5).replaceAll(\"\\\"\", \"\")//WF_CLCL_CUR_STS\n        )\n)\nclaims_xc.toDF().registerTempTable(\"claim_facets_xc\")\nclaims_xc.toDF().printSchema()\n\nvar fac_result\u003d claims_xc.toDF().sqlContext.sql(s\"SELECT * FROM claim_facets A  JOIN claim_facets_wf B ON  A.CLCL_CUR_STS\u003dB.CLCL_CUR_STS \")\n//var fac_result\u003d claims_xc.toDF().sqlContext.sql(s\"Select * from claim_facets_xc \")AND (COUNT_OF_CLAIMS - WF_COUNT_OF_CLAIMS) \u003e0\n//var fac_result\u003d claims_xc.toDF().sqlContext.sql(s\"SELECT * FROM claim_facets_wf \")\nz.show(fac_result)",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-17 14:23:41.281",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "1": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": true,
+              "setting": {
+                "table": {
+                  "tableGridState": {
+                    "columns": [
+                      {
+                        "name": "COUNT_OF_CLAIMS",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "DATE",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "CLCL_CUR_STS",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "WF_COUNT_OF_CLAIMS",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "DATE_OF_WF",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "WF_CLCL_CUR_STS",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      }
+                    ],
+                    "scrollFocus": {},
+                    "selection": [],
+                    "grouping": {
+                      "grouping": [],
+                      "aggregations": [],
+                      "rowExpandedStates": {}
+                    },
+                    "treeView": {},
+                    "pagination": {
+                      "paginationCurrentPage": 1.0,
+                      "paginationPageSize": 250.0
+                    }
+                  },
+                  "tableColumnTypeState": {
+                    "names": {
+                      "COUNT_OF_CLAIMS": "string",
+                      "DATE": "string",
+                      "CLCL_CUR_STS": "string",
+                      "WF_COUNT_OF_CLAIMS": "string",
+                      "DATE_OF_WF": "string",
+                      "WF_CLCL_CUR_STS": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "COUNT_OF_CLAIMS",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": []
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {
+          "Claims start date": "01/01/2016",
+          "Claims end date": "01/01/2017"
+        },
+        "forms": {
+          "Claims start date": {
+            "type": "TextBox",
+            "name": "Claims start date",
+            "displayName": "Claims start date",
+            "defaultValue": "01/01/2016",
+            "hidden": false
+          },
+          "Claims end date": {
+            "type": "TextBox",
+            "name": "Claims end date",
+            "displayName": "Claims end date",
+            "defaultValue": "01/01/2017",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "import org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\nimport java.text.SimpleDateFormat\nimport java.util.Calendar\nimport java.sql.Date\nimport org.joda.time.DateTime\nwarning: there was one deprecation warning; re-run with -deprecation for details\nStart_Date: Object \u003d 01/01/2016\nwarning: there was one deprecation warning; re-run with -deprecation for details\nEnd_Date: Object \u003d 01/01/2017\nreportPath: String \u003d file:///C:/Users/224597/Documents/CLAIMS/DATA/\ndefined object DateUtil\ndefined object FileName\nfacets report file:///C:/Users/224597/Documents/CLAIMS/DATA/09172018_FACETS.csv\r\nfacets xc report file:///C:/Users/224597/Documents/CLAIMS/DATA/09172018_FACETS_XC.csv\r\nclaimText: org.apache.spark.rdd.RDD[String] \u003d ParallelCollectionRDD[96] at parallelize at \u003cconsole\u003e:72\ndefined class Claims\ndefined class Claims_xc\nclaims: org.apache.spark.rdd.RDD[Claims] \u003d MapPartitionsRDD[99] at map at \u003cconsole\u003e:77\nwarning: there was one deprecation warning; re-run with -deprecation for details\nclaims_wf: org.apache.spark.rdd.RDD[Claims] \u003d MapPartitionsRDD[102] at map at \u003cconsole\u003e:77\nwarning: there was one deprecation warning; re-run with -deprecation for details\nclaimText_xc: org.apache.spark.rdd.RDD[String] \u003d ParallelCollectionRDD[103] at parallelize at \u003cconsole\u003e:72\nclaims_xc: org.apache.spark.rdd.RDD[Claims_xc] \u003d MapPartitionsRDD[106] at map at \u003cconsole\u003e:77\nwarning: there was one deprecation warning; re-run with -deprecation for details\nroot\n |-- COUNT_OF_CLAIMS: integer (nullable \u003d false)\n |-- DATE: string (nullable \u003d true)\n |-- CLCL_CUR_STS: string (nullable \u003d true)\n |-- WF_COUNT_OF_CLAIMS: integer (nullable \u003d false)\n |-- DATE_OF_WF: string (nullable \u003d true)\n |-- WF_CLCL_CUR_STS: string (nullable \u003d true)\n\r\nfac_result: org.apache.spark.sql.DataFrame \u003d [COUNT_OF_CLAIMS: int, DATE: string ... 10 more fields]\n"
+          },
+          {
+            "type": "TABLE",
+            "data": "COUNT_OF_CLAIMS\tDATE\tCLCL_CUR_STS\tWF_COUNT_OF_CLAIMS\tDATE_OF_WF\tWF_CLCL_CUR_STS\tCOUNT_OF_CLAIMS\tDATE\tCLCL_CUR_STS\tWF_COUNT_OF_CLAIMS\tDATE_OF_WF\tWF_CLCL_CUR_STS\n"
+          }
+        ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://10.50.204.28:4043/jobs/job?id\u003d20",
+            "http://10.50.204.28:4043/jobs/job?id\u003d21",
+            "http://10.50.204.28:4043/jobs/job?id\u003d22",
+            "http://10.50.204.28:4043/jobs/job?id\u003d23",
+            "http://10.50.204.28:4043/jobs/job?id\u003d24"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1536692035232_129176663",
+      "id": "20180911-145355_433232222",
+      "dateCreated": "2018-09-11 14:53:55.232",
+      "dateStarted": "2018-09-17 13:43:48.183",
+      "dateFinished": "2018-09-17 13:45:50.417",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sql\n\n\nSELECT TO_DATE(CAST(UNIX_TIMESTAMP(DATE, \u0027MM/dd/yyyy\u0027) AS TIMESTAMP)) AS FACETS_CLAIM_IN_DATE FROM claim_facets_xc\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-13 15:11:59.821",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": true,
+              "setting": {
+                "table": {
+                  "tableGridState": {
+                    "columns": [
+                      {
+                        "name": "FACETS_CLAIM_IN_DATE",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      }
+                    ],
+                    "scrollFocus": {},
+                    "selection": [],
+                    "grouping": {
+                      "grouping": [],
+                      "aggregations": [],
+                      "rowExpandedStates": {}
+                    },
+                    "treeView": {},
+                    "pagination": {
+                      "paginationCurrentPage": 1.0,
+                      "paginationPageSize": 250.0
+                    }
+                  },
+                  "tableColumnTypeState": {
+                    "updated": false,
+                    "names": {
+                      "FACETS_CLAIM_IN_DATE": "string"
+                    }
+                  },
+                  "updated": false,
+                  "initialized": false,
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  }
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1536850857924_-637396581",
+      "id": "20180913-110057_872960641",
+      "dateCreated": "2018-09-13 11:00:57.924",
+      "dateStarted": "2018-09-13 14:26:59.359",
+      "dateFinished": "2018-09-13 14:26:59.813",
+      "status": "FINISHED",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sql\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-13 12:33:45.926",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1536856425926_-48263116",
+      "id": "20180913-123345_246900479",
+      "dateCreated": "2018-09-13 12:33:45.926",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Claims_workflow_fallouts",
+  "id": "2DQ5U7H8B",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "MicrosoftSQL:shared_process": [],
+    "md:shared_process": [],
+    "python:shared_process": [],
+    "MicrosoftSQL_DEV:shared_process": [],
+    "jdbc:shared_process": [],
+    "mysql_aso:shared_process": [],
+    "flink:shared_process": [],
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": false,
+    "looknfeel": "default",
+    "personalizedMode": "false"
+  },
+  "info": {}
+}

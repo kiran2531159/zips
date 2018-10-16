@@ -1,0 +1,140 @@
+{
+  "paragraphs": [
+    {
+      "text": "%spark\nimport scala.annotation.switch\nimport scala.collection.immutable.StringOps\nimport scala.util.Try\nimport scala.util.matching._\nimport java.io._\nimport java.io.{File, InputStream, FileInputStream, FileWriter, BufferedWriter}\n\nimport org.apache.commons.io.FileUtils\n\nimport org.apache.spark.SparkContext\nimport org.apache.spark.mllib.linalg.{Vector \u003d\u003e LinAlgVector, Vectors}\nimport org.apache.spark.rdd.RDD\n\nimport org.apache.poi.xssf.usermodel.XSSFWorkbook\nimport org.apache.poi.xssf.usermodel.XSSFRow\nimport org.apache.poi.xssf.usermodel.XSSFCell\nimport org.apache.poi.ss.usermodel.Cell\n\nabstract class ExcelColumnFilter {\n\n  def filterCol(colNumber: Int, colValue: String): Option[String]\n\n  def apply(colNumber: Int, colValue: String): Option[String] \u003d\n    filterCol(colNumber, colValue)\n\n}\n\n\ncase object ExcelColumnIdentity extends ExcelColumnFilter {\n\n  // Identity function, return original value as it is\n\n  override def filterCol(colNumber: Int, colValue: String): Option[String] \u003d Some(colValue)\n\n}\n\n\nclass ExcelDropColumns (val colsToDrop: Array[Int])extends ExcelColumnFilter {\n\n  override def filterCol(colNumber: Int, colValue: String): Option[String] \u003d {\n    if (colsToDrop contains colNumber) None else Some(colValue)\n  }\n\n}\nabstract class ExcelRowTransform {\n\n  def transformRow(rowNumber: Int, rowCells: Array[String]): Array[String]\n\n  def apply(rowNumber: Int, rowCells: Array[String]): Array[String] \u003d\n    transformRow(rowNumber, rowCells)\n\n}\n\ncase object ExcelRowIdentity extends ExcelRowTransform {\n\n  // Identity function, return original value as it is\n\n  override def transformRow(rowNumber: Int, rowCells: Array[String]): Array[String] \u003d rowCells\n\n}\n\nabstract class ExcelRowFilter {\n\n  def filterRow(rowNumber: Int, rowValue: String,\n                saveFunc: String \u003d\u003e Unit,\n                extractFunc: String \u003d\u003e Unit): Unit\n\n  def apply(rowNumber: Int, rowValue: String,\n            saveFunc: String \u003d\u003e Unit,\n            extractFunc: String \u003d\u003e Unit): Unit \u003d\n    filterRow(rowNumber, rowValue, saveFunc, extractFunc)\n\n}\n\ncase object ExcelNoHeader extends ExcelRowFilter {\n\n  override def filterRow(rowNumber: Int, rowValue: String,\n                         saveFunc: String \u003d\u003e Unit,\n                         extractFunc: String \u003d\u003e Unit): Unit \u003d {\n    saveFunc(rowValue)\n  }\n\n}\n\n\ncase object ExcelHeaderDiscard extends ExcelRowFilter {\n\n  override def filterRow(rowNumber: Int, rowValue: String,\n                         saveFunc: String \u003d\u003e Unit,\n                         extractFunc: String \u003d\u003e Unit): Unit \u003d {\n    if (rowNumber !\u003d 0) {\n      saveFunc(rowValue)\n    }\n  }\n\n}\n\n\ncase object ExcelHeaderExtract extends ExcelRowFilter {\n\n  override def filterRow(rowNumber: Int, rowValue: String,\n                         saveFunc: String \u003d\u003e Unit,\n                         extractFunc: String \u003d\u003e Unit): Unit \u003d {\n    if (rowNumber !\u003d 0) {\n      saveFunc(rowValue)\n    } else {\n      extractFunc(rowValue)\n    }\n  }\n\n}\nobject excel_Utils extends Serializable{\n    \n  protected var header: Option[Array[String]] \u003d None\n\n  protected  var csvFullFName: String \u003d \"\"\n  protected var xlsWbk: XSSFWorkbook \u003d null\n  final val fillNANullValue \u003d \"0\"        \n\n  final val csvSeparator \u003d \",\"\n\ndef open(): Unit \u003d {\n    xlsWbk \u003d new XSSFWorkbook(\"C:/Users/224597/Documents/CLAIMS/DATA/092418_Daily_XC_Status_Queue_Role.xlsx\")\n  }\n\n  def close(): Unit \u003d {\n    if (xlsWbk !\u003d null) {\n      xlsWbk.close()\n    }\n  }\n\n  def getHeader(i: Int): String \u003d {\n    header match {\n      case Some(arr) \u003d\u003e if (i \u003e\u003d 0 \u0026\u0026 i \u003c arr.length) arr(i) else \"\"\n      case None \u003d\u003e \"\"\n    }\n  }\n\n  def findHeader(hdrName: String): Int \u003d {\n    header match {\n      case Some(arr) \u003d\u003e arr.indexOf(hdrName)\n      case None \u003d\u003e -1\n    }\n  }\n\n  def getCsvFileName: String \u003d csvFullFName\n\n\n  def iterExcelRows(sheetName: String, rowFunction: XSSFRow \u003d\u003e Unit): Unit \u003d {\n    val xlsSheet \u003d xlsWbk.getSheet(sheetName)\n\n    val rows \u003d xlsSheet.rowIterator()    // get an iterator over the rows\n\n    while (rows.hasNext()) {\n      rowFunction(rows.next().asInstanceOf[XSSFRow])\n    }\n    xlsWbk.close()\n\n  }\n\n  def findMaxColumnInExcelSpreadsh(sheetName: String): Int \u003d {\n\n    // This method is necessary if we want to enforce that the vectors inside the new RDD have all\n    // the same dimension, because Excel does not need that all rows have the same number of\n    // columns.\n\n    var maxCol: Int \u003d -1\n\n    iterExcelRows(sheetName,\n                  (row: XSSFRow) \u003d\u003e {\n                    val maxColRow \u003d row.getLastCellNum - 1\n                    if (maxColRow \u003e maxCol) { maxCol \u003d maxColRow }\n                  }\n    )\n    maxCol\n  }\n  protected def convertDouble(d: Double): String \u003d {\n\n    // This method is just a pretty printer of floats into the CSV, to avoid exponential notation\n    // or 5.350000 with extra non-significant \u00270\u0027s to the right\n\n    val directConversion \u003d \"%f\".format(d)\n\n    if (directConversion.indexOf(\u0027.\u0027) \u003e\u003d 1) {\n      directConversion.reverse.dropWhile(_ \u003d\u003d \u00270\u0027).dropWhile(_ \u003d\u003d \u0027.\u0027).reverse\n      // dropWhile seems slightly faster than tail-recursion to remove non-significant \u00270\u0027\n      // generated when reading the floating-points in the source Excel cells\n    } else {\n      directConversion\n    }\n  }\n\n  def fillEmptyCells(previousVisitedCol: Int, currVisitCol: Int, colFilter: ExcelColumnFilter):\n      String \u003d {\n\n    val strPreffix \u003d if (previousVisitedCol \u003e -1) csvSeparator else \"\"\n    if (previousVisitedCol \u003d\u003d currVisitCol - 1) {\n      strPreffix    // this if-condition is the trivial case\n    } else {\n      // previousVisitedCol \u003c currVisitCol - 1, so there were some cells missing in Excel spreadsheet\n      // We can either fill them with fillNANullValue, or discard any cell if it was supposed to be\n      // filtered-out explicitly by the colFilter\n      var filling \u003d new StringBuilder(8 * 1024)\n      for { jumpedOverCol \u003c- previousVisitedCol+1 until currVisitCol } {\n        colFilter(jumpedOverCol, ( fillNANullValue + csvSeparator )) match {\n          case Some(nonFilteredValue) \u003d\u003e filling.append(nonFilteredValue)\n          case _ \u003d\u003e\n        }\n      }\n      strPreffix + filling.toString\n    }\n  }\n  protected def excelSheetToCsv(sheetName: String, maxColumnIdx: Int,\n      rowFilter: ExcelRowFilter, colFilter: ExcelColumnFilter, rowTransform: ExcelRowTransform,\n      csvFName: String): Unit \u003d {\n\n    val cvsOut \u003d new BufferedWriter(new FileWriter(csvFName))\n    val cvsLine \u003d new StringBuilder(8 * 1024)\n\n    iterExcelRows(sheetName,\n      (row: XSSFRow) \u003d\u003e {\n        cvsLine.clear()\n        val currentRow \u003d row.getRowNum\n        val cells \u003d row.cellIterator    // get an iterator over the cells in this row\n        var previousCellCol: Int \u003d -1\n\n        while (cells.hasNext)\n        {\n          val cell \u003d cells.next.asInstanceOf[XSSFCell]\n          val currentCol \u003d cell.getColumnIndex\n\n          var valueStr \u003d \"\"\n          (cell.getCellType: @switch) match {\n            // As a matter of fact, since our RDD happens to be RDD[LinAlgVector], we only expect\n            // the Excel cells to be Cell.CELL_TYPE_NUMERIC (other RDD[\u003ctypes\u003e] could be freer)\n            case Cell.CELL_TYPE_STRING \u003d\u003e valueStr \u003d cell.getStringCellValue\n            case Cell.CELL_TYPE_NUMERIC \u003d\u003e valueStr \u003d convertDouble(cell.getNumericCellValue)\n            case Cell.CELL_TYPE_BOOLEAN \u003d\u003e valueStr \u003d cell.getBooleanCellValue.toString\n            case _ \u003d\u003e valueStr \u003d \"Unknown value at Row: \" + (currentRow + 1) +\n                                 \" Column: \" + (currentCol + 1)     // or raise exception\n          }\n          colFilter(currentCol, valueStr) match {\n            case Some(s) \u003d\u003e {\n              cvsLine.append(fillEmptyCells(previousCellCol, currentCol, colFilter))\n              cvsLine.append(s)\n              previousCellCol \u003d currentCol\n            }\n            case _ \u003d\u003e\n          }\n        }\n        if (previousCellCol \u003c maxColumnIdx) {\n          // Fill from the last \"previousCellCol\" actually seen, to \"maxColumnIdx\", included (+1)\n          cvsLine.append(fillEmptyCells(previousCellCol, maxColumnIdx + 1, colFilter))\n        }\n        // Now that the csvLine has been filtered (dropping columns, for instance), apply the\n        // rowFilter to see whether to drop the line, and if not, the rowTransform to transform\n        // its values and write the line to the csv text file.\n        rowFilter(currentRow, cvsLine.toString,\n                  line \u003d\u003e {\n                    val cellValues \u003d line.split(csvSeparator)\n                    val newValues \u003d rowTransform(currentRow, cellValues)\n                    cvsOut.write(newValues.mkString(csvSeparator))\n                    cvsOut.newLine()\n                  },\n                  line \u003d\u003e { header \u003d Some(line.split(csvSeparator)) })\n      }\n    )\n    cvsOut.close()\n  }\n\n  def convertCsv2RDD(csvFName: String, sc: SparkContext): RDD[LinAlgVector] \u003d {\n\n    println(System.currentTimeMillis + \": Loading CSV file: \" + csvFName)\n    val data \u003d sc.textFile(csvFName)\n    println(System.currentTimeMillis + \": CSV file loaded: \" + csvFName)\n    // println(\"\\nNumber of elements in the Resilient Distributed Dataset: \" + data.count)\n\n    val parsedData \u003d data.map(\n      s \u003d\u003e Vectors.dense(s.split(csvSeparator).map(\n             token \u003d\u003e Try(token.toDouble).getOrElse(fillNANullValue.toDouble)\n           )\n      )\n    ).cache()\n\n    // println(\"Data parsed. Class \" + parsedData.getClass.getName)\n    parsedData\n  }\n\n\n  def convertExcelSpreadsh2RDD(sheetName: String, rowFilter: ExcelRowFilter,\n      colFilter: ExcelColumnFilter, rowTransform: ExcelRowTransform, sc: SparkContext):\n      RDD[LinAlgVector] \u003d {\n\n    // we ensure that all vectors inside the generated RDD from the Excel spreadsheet have the\n    // same dimension\n\n    // println(System.currentTimeMillis + \": Finding max column index in the Excel XLSX spreadsh\")\n    val maxColumn \u003d findMaxColumnInExcelSpreadsh(sheetName)\n    // println(System.currentTimeMillis + \": Found the max column: \" + maxColumn)\n\n    var newRDD: RDD[LinAlgVector] \u003d null\n    val csvFile \u003d File.createTempFile(\"excel_xlsx_\", \".csv\")\n    csvFile.deleteOnExit()\n    try {\n      val tempCsvFName \u003d csvFile.getAbsolutePath\n\n      println(System.currentTimeMillis + \": Starting conversion of Excel XLSX to CSV text file: \" +\n              tempCsvFName)\n      excelSheetToCsv(sheetName, maxColumn, rowFilter, colFilter, rowTransform, tempCsvFName)\n      println(System.currentTimeMillis + \": Finished conversion of Excel XLSX to CSV text file: \" +\n              tempCsvFName)\n\n      newRDD \u003d convertCsv2RDD(tempCsvFName, sc)\n      csvFullFName \u003d csvFile.getAbsolutePath\n    } finally {\n      // FileUtils.deleteQuietly(csvFile)\n      //   TODO: FIX:\n      //      can\u0027t delete it immediately in this thread, because Spark is still reading it in\n      //      another thread. That\u0027s why the csvFile.deleteOnExit() above, to delete it on exit.\n      //      This is an issue though inside Unix-style daemons or Windows system services.\n    }\n\n    newRDD\n  }\n\n}",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-25 14:55:36.502",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "lineNumbers": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1537884995367_1531732855",
+      "id": "20180925-101635_933583607",
+      "dateCreated": "2018-09-25 10:16:35.367",
+      "dateStarted": "2018-09-25 14:55:36.563",
+      "dateFinished": "2018-09-25 14:57:04.351",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nimport java.net.URL\nimport java.nio.charset.Charset\nimport java.text.SimpleDateFormat\nimport java.util.Calendar\nimport java.sql.Date\nimport java.sql.Timestamp\nimport org.apache.commons.io.IOUtils\nprintln(\"\"\"%html \u003cb\u003e Claims in workflow missing in Claims table\"\"\")\nval report \u003d sc.parallelize(IOUtils.toString(new URL(\"file:///C:/Users/224597/Documents/CLAIMS/092418_Daily_XC_Status_Queue_Role.csv\"),Charset.forName(\"utf8\")).split(\"\\n\"))\n\nobject claims_report extends Serializable{\ndef getDate(x:Any) : Date \u003d {\n    val format \u003d new SimpleDateFormat(\"yyyy-MM-dd\")\n    if (x.toString() \u003d\u003d \"\") \n    return null\n    else {\n        val d \u003d format.parse(x.toString());\n        return new java.sql.Date(d.getTime())\n    }\n}\n}\ncase class report_con(ITS_IND:String ,CLCL_ID:String,CLCL_INPUT_DT:String,INPUT_MONTH:String,INPUT_YEAR:String,CLCL_RECD_DT:String,CLCL_LAST_ACT_DTM:String,LAST_ACT_MM_YY:String,CLCL_CL_SUB_TYPE:String,CLCL_CUR_STS:String,CLCL_BATCH_ACTION:String,CLCL_TOT_CHG:String,USUS_ID:String,Age_Buckets:String,WQMS_STATUS:String,WQDF_QUEUE_ID:String,WROL_ROLE_ID:String,WQDF_DESC:String,WROL_ROLE_DESC:String,WK_WARNING_MESSAGE:String,WFMN_NOTE:String,SYMD_MSG_CD:String,SYML_STRING_VALUE1:String,SYMD_SHORT_DESC:String,WF_HISTORY_LAST_MSG:String,WF_HISTORY_LAST_USER:String,WF_ROUTED_DT:String,Work_Flow_Exists:String,XC_Provider_Needed_Exists:String,Provider_Name:String,Facility_Name:String,Federal_Tax_ID:String,NPI:String,Taxonomy_Code:String,Address:String,Facets_CLCL_ID:String,IS_CLAIM_IN_FACTES:String,Claim_Status:String,CLAIM_FROM_DT:String,PSCD_ID:String)\nval claims \u003d report.map(s\u003d\u003es.split(\",\")).map(\n    s\u003d\u003ereport_con(\n        s(0).replaceAll(\"\\\"\", \"\"), \n        s(1).replaceAll(\"\\\"\", \"\"), \n        s(2).replaceAll(\"\\\"\", \"\"), \n        s(3).replaceAll(\"\\\"\", \"\"), \n        s(4).replaceAll(\"\\\"\", \"\"), \n        s(5).replaceAll(\"\\\"\", \"\"), \n        s(6).replaceAll(\"\\\"\", \"\"), \n        s(7).replaceAll(\"\\\"\", \"\"), \n        s(8).replaceAll(\"\\\"\", \"\"), \n        s(9).replaceAll(\"\\\"\", \"\"), \n        s(10).replaceAll(\"\\\"\", \"\"), \n        s(11).replaceAll(\"\\\"\", \"\"), \n        s(12).replaceAll(\"\\\"\", \"\"), \n        s(13).replaceAll(\"\\\"\", \"\"), \n        s(14).replaceAll(\"\\\"\", \"\"), \n        s(15).replaceAll(\"\\\"\", \"\"), \n        s(16).replaceAll(\"\\\"\", \"\"), \n        s(17).replaceAll(\"\\\"\", \"\"), \n        s(18).replaceAll(\"\\\"\", \"\"), \n        s(19).replaceAll(\"\\\"\", \"\"), \n        s(20).replaceAll(\"\\\"\", \"\"), \n        s(21).replaceAll(\"\\\"\", \"\"), \n        s(22).replaceAll(\"\\\"\", \"\"), \n        s(23).replaceAll(\"\\\"\", \"\"), \n        s(24).replaceAll(\"\\\"\", \"\"), \n        s(25).replaceAll(\"\\\"\", \"\"), \n        s(26).replaceAll(\"\\\"\", \"\"), \n        s(27).replaceAll(\"\\\"\", \"\"), \n        s(28).replaceAll(\"\\\"\", \"\"), \n        s(29).replaceAll(\"\\\"\", \"\"), \n        s(30).replaceAll(\"\\\"\", \"\"), \n        s(31).replaceAll(\"\\\"\", \"\"), \n        s(32).replaceAll(\"\\\"\", \"\"), \n        s(33).replaceAll(\"\\\"\", \"\"), \n        s(34).replaceAll(\"\\\"\", \"\"), \n        s(35).replaceAll(\"\\\"\", \"\"), \n        s(36).replaceAll(\"\\\"\", \"\"), \n        s(37).replaceAll(\"\\\"\", \"\"), \n        s(38).replaceAll(\"\\\"\", \"\"), s(39).replaceAll(\"\\\"\", \"\")\n        )\n        )\nclaims.toDF().registerTempTable(\"details\")\nvar result\u003d claims.toDF().sqlContext.sql(s\"select * from details\")\n\nz.show(result)",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-24 20:32:13.745",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "lineNumbers": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cb\u003e Claims in workflow missing in Claims table\r\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537818662456_1642894980",
+      "id": "20180924-155102_1482140815",
+      "dateCreated": "2018-09-24 15:51:02.456",
+      "dateStarted": "2018-09-24 20:32:13.796",
+      "dateFinished": "2018-09-24 20:32:27.371",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\n\nimport scala.annotation.switch\nimport scala.collection.immutable.StringOps\nimport scala.util.Try\nimport scala.util.matching._\nimport java.io._\nimport java.io.{File, InputStream, FileInputStream, FileWriter, BufferedWriter}\n\nimport org.apache.commons.io.FileUtils\n\nimport org.apache.spark.SparkContext\nimport org.apache.spark.mllib.linalg.{Vector \u003d\u003e LinAlgVector, Vectors}\nimport org.apache.spark.rdd.RDD\n\nimport org.apache.poi.xssf.usermodel.XSSFWorkbook\nimport org.apache.poi.xssf.usermodel.XSSFRow\nimport org.apache.poi.xssf.usermodel.XSSFCell\nimport org.apache.poi.ss.usermodel.Cell\nvar rowFilter\u003d new ExcelRowFilter\nvar colFilter\u003d new ExcelColumnFilter\nvar rowTransform \u003d new ExcelRowTransform\nvar csv_file \u003d excel_Utils.excelSheetToCsv(\"Report\", 1000,\n      rowFilter , colFilter: ExcelColumnFilter, rowTransform: ExcelRowTransform,\n      \"C:/Users/224597/Documents/CLAIMS/DATA/temp.c\")",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-25 14:43:45.268",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1537819545644_-1975199361",
+      "id": "20180924-160545_2055358675",
+      "dateCreated": "2018-09-24 16:05:45.644",
+      "dateStarted": "2018-09-25 14:43:45.341",
+      "dateFinished": "2018-09-25 14:44:36.948",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-25 14:31:42.453",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1537900302451_-1627081797",
+      "id": "20180925-143142_1176600044",
+      "dateCreated": "2018-09-25 14:31:42.451",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "CLAIMS_XC_DATA",
+  "id": "2DTQED24S",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": true
+  },
+  "info": {}
+}

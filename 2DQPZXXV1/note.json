@@ -1,0 +1,1012 @@
+{
+  "paragraphs": [
+    {
+      "text": "%spark\nimport org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\nimport java.text.SimpleDateFormat\nimport java.util.Calendar\nimport java.sql.Date\nimport java.sql.Timestamp\nprintln(\"\"\"%html \u003cb\u003e Pended Claim missing from Facets workflow(False positive) \"\"\")\nval claimstbldt\u003d\"file:///C:/Users/224597/Documents/CLAIMS/DATA/claims_not_inwf_not_inlk_1004.csv\"\nval claimstbldt_xc\u003d\"file:///C:/Users/224597/Documents/CLAIMS/DATA/claims_not_inwf_not_inlk_XC_1004.csv\"\n\ndef getDate(x:Any) : Date \u003d {\n    val format \u003d new SimpleDateFormat(\"yyyy-MM-dd\")\n    if (x.toString() \u003d\u003d \"\") \n    return null\n    else {\n        val d \u003d format.parse(x.toString());\n        return new java.sql.Date(d.getTime())\n    }\n}\n\nval non_xc \u003d sc.parallelize(IOUtils.toString(new URL(claimstbldt),Charset.forName(\"utf8\")).split(\"\\n\"))\nval xc \u003d sc.parallelize(IOUtils.toString(new URL(claimstbldt_xc),Charset.forName(\"utf8\")).split(\"\\n\"))\ncase class missing_in_wf(CLAIMS:String , DATE_OF_CLAIMS:java.sql.Date , CLAIM_STS:String ,Type :String)\n\nval claims_non_xc \u003d non_xc.map(s\u003d\u003es.split(\",\")).filter(s\u003d\u003es(0)!\u003d\"\\\"COUNT_OF_CLAIMS\\\"\").map(\n    s\u003d\u003emissing_in_wf(\n        s(0).replaceAll(\"\\\"\", \"\"), \n        getDate(s(1)),\n        s(2).replaceAll(\"\\\"\", \"\"),\n        \"non-XC\"\n        )\n)\nval claims_xc \u003d xc.map(s\u003d\u003es.split(\",\")).filter(s\u003d\u003es(0)!\u003d\"\\\"COUNT_OF_CLAIMS\\\"\").map(\n    s\u003d\u003emissing_in_wf(\n        s(0).replaceAll(\"\\\"\", \"\"), \n        getDate(s(1)),\n        s(2).replaceAll(\"\\\"\", \"\"),\n        \"XC\"\n        )\n)\nclaims_non_xc.toDF().registerTempTable(\"claimsNonXc\")\nclaims_xc.toDF().registerTempTable(\"claimsXc\")\nvar nonxc_claims_result\u003d claims_non_xc.toDF().sqlContext.sql(s\"select count(CLAIMS) as CLAIM_COUNT,Type,DATE_OF_CLAIMS FROM claimsNonXc GROUP BY DATE_OF_CLAIMS,Type order by DATE_OF_CLAIMS\")\nvar xc_claim_result\u003d claims_xc.toDF().sqlContext.sql(s\"select count(CLAIMS) as CLAIM_COUNT ,Type,DATE_OF_CLAIMS FROM claimsXc GROUP BY DATE_OF_CLAIMS,Type order by DATE_OF_CLAIMS\")\nval result_df \u003d nonxc_claims_result.unionAll(xc_claim_result)\nval result_df_1 \u003dresult_df.orderBy($\"DATE_OF_CLAIMS\".asc)\nz.show(result_df_1)",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-08 20:35:43.946",
+      "config": {
+        "colWidth": 5.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "1": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 415.333,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "CLAIM_COUNT": "string",
+                      "Type": "string",
+                      "DATE_OF_CLAIMS": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default",
+                  "stacked": false
+                },
+                "lineChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                },
+                "stackedAreaChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "DATE_OF_CLAIMS",
+                  "index": 2.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [
+                {
+                  "name": "Type",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [
+                {
+                  "name": "CLAIM_COUNT",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cb\u003e Pended Claim missing from Facets workflow(False positive) \r\n"
+          },
+          {
+            "type": "TABLE",
+            "data": "CLAIM_COUNT\tType\tDATE_OF_CLAIMS\n1\tnon-XC\t2018-05-03\n1\tXC\t2018-05-24\n1\tXC\t2018-05-29\n1\tXC\t2018-06-05\n1\tnon-XC\t2018-06-07\n2\tnon-XC\t2018-06-12\n1\tnon-XC\t2018-06-14\n1\tnon-XC\t2018-06-20\n1\tXC\t2018-07-02\n1\tXC\t2018-07-10\n1\tnon-XC\t2018-07-16\n2\tnon-XC\t2018-07-19\n2\tXC\t2018-07-19\n21\tXC\t2018-07-20\n1\tXC\t2018-07-25\n1\tnon-XC\t2018-08-08\n1\tXC\t2018-08-23\n1\tXC\t2018-08-30\n1\tnon-XC\t2018-09-11\n1\tnon-XC\t2018-09-24\n1\tnon-XC\t2018-09-28\n1\tXC\t2018-10-01\n1\tnon-XC\t2018-10-01\n1\tXC\t2018-10-02\n30\tXC\t2018-10-03\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537985370024_1453461237",
+      "id": "20180926-140930_2047196016",
+      "dateCreated": "2018-09-26 14:09:30.024",
+      "dateStarted": "2018-10-04 14:02:10.752",
+      "dateFinished": "2018-10-04 14:03:08.433",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-04 15:46:04.253",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1538682364248_-1607504218",
+      "id": "20181004-154604_787899555",
+      "dateCreated": "2018-10-04 15:46:04.248",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\n\n//println(\"\"\"%html \u003cb\u003eSearch the claims \"\"\")\n\nvar clcl_date\u003dgetDate(z.input(\"Claims date\", \"2019-01//-01\"))\n\n\n\n\n/*println(\"\"\"\n%angular\n\u003cinput type\u003d\"text\" id\u003d\"calendar\" size\u003d\"20\" ng-model\u003d\"calendar\"\u003e\u003c/input\u003e\n \n\u003cscript\u003e\n$(\"#calendar\").datepicker({\n    dateFormat: \u0027yy-mm-dd\u0027\n});\n\u003c/script\u003e\n\"\"\")\nz.angularWatch(\"calendar\", (before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext) \u003d\u003e {\n    // on calendar change, run 3rd paragraph. Paragraph index starts from 0\n   // z.run(\"20180926-142928_1757358769\",context)\n    z.run(\"20180926-142928_1757358769\")\n})\n\n\n// bind value\n//z.angularUnbind(\"calendar\") // clear previously binded //value\nz.angularBind(\"calendar\", \"15-11-21\")\nvar clcl_date \u003d  z.angular(\"calendar\").toString*/\nvar nonxc_act_claims_result\u003d claims_non_xc.toDF().sqlContext.sql(s\"select CLAIMS ,Type,DATE_OF_CLAIMS FROM claimsNonXc                 where     DATE_OF_CLAIMS\u003d\u0027$clcl_date\u0027\")\nvar xc_act_claim_result\u003d claims_xc.toDF().sqlContext.sql(s\"select CLAIMS ,Type,DATE_OF_CLAIMS FROM   claimsXc where DATE_OF_CLAIMS\u003d\u0027$clcl_date\u0027  \")\nz.show(nonxc_act_claims_result.union(xc_act_claim_result))",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-04 15:47:47.429",
+      "config": {
+        "colWidth": 4.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "CLAIMS": "string",
+                      "Type": "string",
+                      "DATE_OF_CLAIMS": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          },
+          "1": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {
+                    "columns": [
+                      {
+                        "name": "CLAIMS",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "Type",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {
+                          "direction": "asc",
+                          "priority": 0.0
+                        },
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "DATE_OF_CLAIMS",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      }
+                    ],
+                    "scrollFocus": {},
+                    "selection": [],
+                    "grouping": {
+                      "grouping": [],
+                      "aggregations": [],
+                      "rowExpandedStates": {}
+                    },
+                    "treeView": {},
+                    "pagination": {
+                      "paginationCurrentPage": 1.0,
+                      "paginationPageSize": 250.0
+                    }
+                  },
+                  "tableColumnTypeState": {
+                    "names": {
+                      "CLAIMS": "string",
+                      "Type": "string",
+                      "DATE_OF_CLAIMS": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          },
+          "2": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "CLAIMS": "string",
+                      "Type": "string",
+                      "DATE_OF_CLAIMS": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {
+          "Claims date": "2018-07-19",
+          "\n%angular\n\u003cinput type\u003d\"text\" id\u003d\"calendar\" size\u003d\"20\" ng-model\u003d\"calendar\"\u003e\u003c/input\u003e\n\u003cscript\u003e\n$(\"#calendar\").datepicker({\n    dateFormat: \u0027yy-mm-dd\u0027\n});\n\u003c/script\u003e": ""
+        },
+        "forms": {
+          "Claims date": {
+            "type": "TextBox",
+            "name": "Claims date",
+            "displayName": "Claims date",
+            "defaultValue": "2019-01//-01",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "CLAIMS\tType\tDATE_OF_CLAIMS\n﻿18200B102400\tnon-XC\t2018-07-19\n18200D844600\tnon-XC\t2018-07-19\n18173A349300\tXC\t2018-07-19\n18169A656400\tXC\t2018-07-19\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537986568567_1444659419",
+      "id": "20180926-142928_1757358769",
+      "dateCreated": "2018-09-26 14:29:28.567",
+      "dateStarted": "2018-10-04 15:47:47.496",
+      "dateFinished": "2018-10-04 15:47:49.933",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nimport java.net.URL\nimport java.nio.charset.Charset\nimport java.text.SimpleDateFormat\nimport java.util.Calendar\nimport java.sql.Date\nimport java.sql.Timestamp\nprintln(\"\"\"%html \u003cb\u003e Claims which are accepted and awaiting batch ,struck in Facets workflow(False negative)\n\"\"\")\n\nvar clcl_start_date\u003dgetDate(z.input(\"Claims start date\", \"2018-01-01\"))\nvar clcl_end_date\u003dgetDate(z.input(\"Claims end date\", \"2019-01-01\"))\nval claims_not_in_core \u003d sc.parallelize(IOUtils.toString(new URL(\"file:///C:/Users/224597/Documents/CLAIMS/DATA/cliams_in_wf_not_in_claim_tbl_1004.csv\"),Charset.forName(\"utf8\")).split(\"\\n\"))\n\ncase class wf_frame(WQMS_MESSAGE_ID:String ,WQMS_PRIORITY:String,WQMS_STATUS:String,WQMS_RECEIVED_DT :java.sql.Date )\nval wf_details \u003d claims_not_in_core.map(s\u003d\u003es.split(\",\")).map(\n    s\u003d\u003ewf_frame(\n        s(0).replaceAll(\"\\\"\", \"\"), \n        s(1).replaceAll(\"\\\"\", \"\"), \n        s(2).replaceAll(\"\\\"\", \"\"), \n        getDate(s(3))\n        )\n)\nwf_details.toDF().registerTempTable(\"wf_details_df\")\nvar wf_result\u003d wf_details.toDF().sqlContext.sql(s\"SELECT count(WQMS_MESSAGE_ID) as COUNT_OF_CLAIMS,WQMS_PRIORITY  , WQMS_RECEIVED_DT from wf_details_df where WQMS_RECEIVED_DT \u003e\u003d\u0027$clcl_start_date\u0027 and  WQMS_RECEIVED_DT \u003c\u003d \u0027$clcl_end_date\u0027   GROUP BY WQMS_PRIORITY, WQMS_RECEIVED_DT ORDER BY WQMS_RECEIVED_DT\")\nz.show(wf_result)",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-08 20:35:44.564",
+      "config": {
+        "colWidth": 5.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "1": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 263.983,
+              "optionOpen": true,
+              "setting": {
+                "scatterChart": {
+                  "xAxis": {
+                    "name": "WQMS_RECEIVED_DT",
+                    "index": 2.0,
+                    "aggr": "sum"
+                  },
+                  "yAxis": {
+                    "name": "COUNT_OF_CLAIMS",
+                    "index": 0.0,
+                    "aggr": "sum"
+                  },
+                  "group": {
+                    "name": "WQMS_PRIORITY",
+                    "index": 1.0,
+                    "aggr": "sum"
+                  }
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default",
+                  "stacked": false
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "WQMS_RECEIVED_DT",
+                  "index": 2.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [
+                {
+                  "name": "WQMS_PRIORITY",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [
+                {
+                  "name": "COUNT_OF_CLAIMS",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {
+          "Claims start date": "2018-09-01",
+          "Claims end date": "2018-10-03"
+        },
+        "forms": {
+          "Claims start date": {
+            "type": "TextBox",
+            "name": "Claims start date",
+            "displayName": "Claims start date",
+            "defaultValue": "2018-01-01",
+            "hidden": false
+          },
+          "Claims end date": {
+            "type": "TextBox",
+            "name": "Claims end date",
+            "displayName": "Claims end date",
+            "defaultValue": "2019-01-01",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cb\u003e Claims which are accepted and awaiting batch ,struck in Facets workflow(False negative)\n\r\n"
+          },
+          {
+            "type": "TABLE",
+            "data": "COUNT_OF_CLAIMS\tWQMS_PRIORITY\tWQMS_RECEIVED_DT\n2\t1\t2018-09-03\n1\t3\t2018-09-04\n2\t1\t2018-09-04\n10\t3\t2018-09-05\n1\t1\t2018-09-05\n1\t3\t2018-09-06\n9\t1\t2018-09-06\n15\t1\t2018-09-07\n6\t3\t2018-09-07\n5\t3\t2018-09-10\n16\t1\t2018-09-10\n2\t3\t2018-09-11\n15\t1\t2018-09-11\n12\t1\t2018-09-12\n8\t3\t2018-09-12\n10\t1\t2018-09-13\n6\t3\t2018-09-13\n3\t3\t2018-09-14\n7\t1\t2018-09-14\n7\t3\t2018-09-17\n16\t1\t2018-09-17\n18\t1\t2018-09-18\n5\t3\t2018-09-18\n24\t1\t2018-09-19\n5\t3\t2018-09-19\n7\t3\t2018-09-20\n15\t1\t2018-09-20\n18\t1\t2018-09-21\n4\t3\t2018-09-21\n1\t3\t2018-09-22\n30\t1\t2018-09-24\n8\t3\t2018-09-24\n19\t1\t2018-09-25\n29\t3\t2018-09-25\n24\t1\t2018-09-26\n23\t3\t2018-09-26\n15\t1\t2018-09-27\n54\t3\t2018-09-27\n40\t1\t2018-09-28\n951\t3\t2018-09-28\n1\t3\t2018-09-29\n628\t3\t2018-10-01\n25\t1\t2018-10-01\n1977\t3\t2018-10-02\n10\t1\t2018-10-02\n1609\t3\t2018-10-03\n14\t1\t2018-10-03\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537988560634_-857001861",
+      "id": "20180926-150240_1491295994",
+      "dateCreated": "2018-09-26 15:02:40.634",
+      "dateStarted": "2018-10-04 12:18:09.970",
+      "dateFinished": "2018-10-04 12:18:21.395",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nprintln(\"\"\"%html \u003cb\u003eSearch the workflow claims \"\"\")\n\nvar clcl_date\u003dgetDate(z.input(\"Claims date\", \"2019-01-01\"))\nvar wf_clm_results\u003d wf_details.toDF().sqlContext.sql(s\"select * FROM   wf_details_df where WQMS_RECEIVED_DT\u003d\u0027$clcl_date\u0027  \")\nz.show(wf_clm_results)",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-04 12:06:13.753",
+      "config": {
+        "colWidth": 4.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "1": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {
+                    "columns": [
+                      {
+                        "name": "WQMS_MESSAGE_ID",
+                        "visible": true,
+                        "width": 169.0,
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "WQMS_PRIORITY",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "WQMS_STATUS",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "WQMS_RECEIVED_DT",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      }
+                    ],
+                    "scrollFocus": {},
+                    "selection": [],
+                    "grouping": {
+                      "grouping": [],
+                      "aggregations": [],
+                      "rowExpandedStates": {}
+                    },
+                    "treeView": {},
+                    "pagination": {
+                      "paginationCurrentPage": 1.0,
+                      "paginationPageSize": 250.0
+                    }
+                  },
+                  "tableColumnTypeState": {
+                    "names": {
+                      "WQMS_MESSAGE_ID": "string",
+                      "WQMS_PRIORITY": "string",
+                      "WQMS_STATUS": "string",
+                      "WQMS_RECEIVED_DT": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {
+          "Claims date": "2018-08-23"
+        },
+        "forms": {
+          "Claims date": {
+            "type": "TextBox",
+            "name": "Claims date",
+            "displayName": "Claims date",
+            "defaultValue": "2019-01-01",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cb\u003eSearch the workflow claims \r\n"
+          },
+          {
+            "type": "TABLE",
+            "data": "WQMS_MESSAGE_ID\tWQMS_PRIORITY\tWQMS_STATUS\tWQMS_RECEIVED_DT\n18131C306601\t1\t1\t2018-08-23\n18234D958600\t1\t1\t2018-08-23\n18233B790200\t1\t1\t2018-08-23\n18194B366901\t1\t1\t2018-08-23\n18218E663501\t1\t1\t2018-08-23\n18227E617300\t1\t1\t2018-08-23\n18235A775800\t1\t1\t2018-08-23\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1538007686966_1840123686",
+      "id": "20180926-202126_121420962",
+      "dateCreated": "2018-09-26 20:21:26.966",
+      "dateStarted": "2018-10-04 12:06:13.892",
+      "dateFinished": "2018-10-04 12:06:16.736",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nimport java.net.URL\nimport java.nio.charset.Charset\nimport java.text.SimpleDateFormat\nimport java.util.Calendar\nimport java.sql.Date\nimport java.sql.Timestamp\nprintln(\"\"\"%html \u003cb\u003e Claims Drag date Analytics  (False Positive) \"\"\")\n\nvar clcl_start_date\u003dgetDate(z.input(\"Claims start date\", \"2018-01-01\"))\nvar clcl_end_date\u003dgetDate(z.input(\"Claims end date\", \"2019-01-01\"))\nval dragdt_past \u003d sc.parallelize(IOUtils.toString(new URL(\"file:///C:/Users/224597/Documents/CLAIMS/DATA/claims_drag_dt_with_25dy_1004.csv\"),Charset.forName(\"utf8\")).split(\"\\n\"))\nval dragdt_1753 \u003d sc.parallelize(IOUtils.toString(new URL(\"file:///C:/Users/224597/Documents/CLAIMS/DATA/claims_drag_dt_with_1753_1004.csv\"),Charset.forName(\"utf8\")).split(\"\\n\"))\n\ncase class drag_dt_frame(CLAIM_ID:String ,DRAG_DT :java.sql.Date,REASON:String ,RECIEVED_DT:java.sql.Date,Type:String)\nval dragdt_past_data \u003d dragdt_past.map(s\u003d\u003es.split(\",\")).map(\n    s\u003d\u003edrag_dt_frame(\n        s(0).replaceAll(\"\\\"\", \"\"), \n        getDate(s(1)),\n        s(2).replaceAll(\"\\\"\", \"\"),\n        getDate(s(3)),\n        \"Have Drag date\"\n        )\n)\nval dragdt_1753_data \u003d dragdt_1753.map(s\u003d\u003es.split(\",\")).map(\n    s\u003d\u003edrag_dt_frame(\n        s(0).replaceAll(\"\\\"\", \"\"), \n        getDate(s(1)),\n       s(2).replaceAll(\"\\\"\", \"\"),\n        getDate(s(3)),\n        \"1753 Drag date\"\n        )\n)\ndragdt_past_data.toDF().registerTempTable(\"past_drag_dt\")\ndragdt_1753_data.toDF().registerTempTable(\"1753_drag_dt\")\nvar drag_past_result\u003d dragdt_past_data.toDF().sqlContext.sql(s\"Select count(CLAIM_ID) as NUMBER_OF_CLAIMS ,DRAG_DT , REASON ,RECIEVED_DT ,Type from past_drag_dt WHERE RECIEVED_DT \u003e\u003d\u0027$clcl_start_date\u0027 and RECIEVED_DT \u003c\u003d\u0027$clcl_end_date\u0027 GROUP BY DRAG_DT , REASON ,RECIEVED_DT ,Type\")\nvar drag_1753_result\u003d dragdt_past_data.toDF().sqlContext.sql(s\"Select count(CLAIM_ID) AS NUMBER_OF_CLAIMS ,DRAG_DT , REASON ,RECIEVED_DT ,Type from 1753_drag_dt WHERE RECIEVED_DT \u003e\u003d\u0027$clcl_start_date\u0027 and RECIEVED_DT \u003c\u003d\u0027$clcl_end_date\u0027 GROUP BY DRAG_DT , REASON ,RECIEVED_DT ,Type\")\nvar drag_past_result_new\u003ddrag_past_result.union(drag_1753_result)\nval drag_past_result_new_1 \u003ddrag_past_result_new.orderBy($\"RECIEVED_DT\".asc)\nz.show(drag_past_result_new_1)",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-08 20:35:45.001",
+      "config": {
+        "colWidth": 4.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "1": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": true,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "NUMBER_OF_CLAIMS": "string",
+                      "DRAG_DT": "string",
+                      "REASON": "string",
+                      "RECIEVED_DT": "string",
+                      "Type": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default",
+                  "stacked": false
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "RECIEVED_DT",
+                  "index": 3.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [
+                {
+                  "name": "Type",
+                  "index": 4.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [
+                {
+                  "name": "NUMBER_OF_CLAIMS",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {
+          "Claims start date": "2018-05-01",
+          "Claims end date": "2019-01-01"
+        },
+        "forms": {
+          "Claims start date": {
+            "type": "TextBox",
+            "name": "Claims start date",
+            "displayName": "Claims start date",
+            "defaultValue": "2018-01-01",
+            "hidden": false
+          },
+          "Claims end date": {
+            "type": "TextBox",
+            "name": "Claims end date",
+            "displayName": "Claims end date",
+            "defaultValue": "2019-01-01",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cb\u003e Claims Drag date Analytics  (False Positive) \r\n"
+          },
+          {
+            "type": "TABLE",
+            "data": "NUMBER_OF_CLAIMS\tDRAG_DT\tREASON\tRECIEVED_DT\tType\n1\t2018-06-07\tOverridden On Claim\t2018-05-14\tHave Drag date\n1\t2018-07-26\tSystem Generated\t2018-07-24\tHave Drag date\n1\t2018-08-17\tSystem Generated\t2018-07-24\tHave Drag date\n1\t1753-01-01\t \t2018-07-25\t1753 Drag date\n2\t2018-08-18\tSystem Generated\t2018-07-25\tHave Drag date\n1\t2018-07-27\tSystem Generated\t2018-07-25\tHave Drag date\n1\t2018-07-28\tSystem Generated\t2018-07-26\tHave Drag date\n1\t2018-08-23\tSystem Generated\t2018-07-30\tHave Drag date\n1\t2018-08-17\tSystem Generated\t2018-07-30\tHave Drag date\n2\t2018-08-24\tSystem Generated\t2018-07-31\tHave Drag date\n1\t2018-08-04\tSystem Generated\t2018-08-02\tHave Drag date\n8\t2018-08-30\tSystem Generated\t2018-08-06\tHave Drag date\n7\t2018-08-31\tSystem Generated\t2018-08-07\tHave Drag date\n10\t2018-09-01\tSystem Generated\t2018-08-08\tHave Drag date\n1\t1753-01-01\t \t2018-08-08\t1753 Drag date\n11\t2018-09-02\tSystem Generated\t2018-08-09\tHave Drag date\n1\t2018-08-12\tSystem Generated\t2018-08-10\tHave Drag date\n1\t2018-08-26\tSystem Generated\t2018-08-10\tHave Drag date\n2\t2018-09-03\tSystem Generated\t2018-08-10\tHave Drag date\n4\t2018-09-06\tSystem Generated\t2018-08-13\tHave Drag date\n33\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n2\t1753-01-01\t \t2018-08-14\t1753 Drag date\n3\t2018-08-17\tSystem Generated\t2018-08-15\tHave Drag date\n24\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n1\t1753-01-01\t \t2018-08-15\t1753 Drag date\n24\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n2\t2018-08-19\tSystem Generated\t2018-08-17\tHave Drag date\n1\t2018-09-06\tSystem Generated\t2018-08-17\tHave Drag date\n3\t2018-09-06\tSystem Generated\t2018-08-20\tHave Drag date\n1\t2018-09-09\tSystem Generated\t2018-08-21\tHave Drag date\n1\t1753-01-01\t \t2018-08-23\t1753 Drag date\n1\t1753-01-01\tOverridden On Claim\t2018-08-24\t1753 Drag date\n1\t2018-09-02\tSystem Generated\t2018-08-31\tHave Drag date\n1\t2018-09-08\tSystem Generated\t2018-09-06\tHave Drag date\n1\t1753-01-01\t \t2018-09-10\t1753 Drag date\n1\t1753-01-01\t \t2018-09-13\t1753 Drag date\n1\t1753-01-01\t \t2018-09-17\t1753 Drag date\n1\t1753-01-01\tOverridden On Claim\t2018-09-19\t1753 Drag date\n1\t1753-01-01\t \t2018-09-19\t1753 Drag date\n1\t1753-01-01\tOverridden On Claim\t2018-09-20\t1753 Drag date\n1\t1753-01-01\t \t2018-09-20\t1753 Drag date\n3\t1753-01-01\t \t2018-09-24\t1753 Drag date\n3\t1753-01-01\t \t2018-09-26\t1753 Drag date\n1\t2017-09-21\tSystem Generated\t2018-09-27\tHave Drag date\n1\t2018-02-22\tSystem Generated\t2018-09-27\tHave Drag date\n1\t2018-02-19\tSystem Generated\t2018-09-27\tHave Drag date\n2\t1753-01-01\t \t2018-09-27\t1753 Drag date\n2\t1753-01-01\tOverridden On Claim\t2018-09-27\t1753 Drag date\n1\t2018-01-01\tSystem Generated\t2018-09-27\tHave Drag date\n1\t2017-12-04\tSystem Generated\t2018-09-28\tHave Drag date\n1\t2017-10-08\tSystem Generated\t2018-09-28\tHave Drag date\n1\t2017-07-30\tSystem Generated\t2018-09-28\tHave Drag date\n1\t2017-12-08\tSystem Generated\t2018-09-28\tHave Drag date\n2\t1753-01-01\t \t2018-09-28\t1753 Drag date\n1\t2018-07-05\tSystem Generated\t2018-09-28\tHave Drag date\n1\t2018-04-28\tSystem Generated\t2018-09-28\tHave Drag date\n1\t2017-12-01\tSystem Generated\t2018-09-28\tHave Drag date\n3\t1753-01-01\tOverridden On Claim\t2018-09-28\t1753 Drag date\n1\t1753-01-01\tOverridden On Claim\t2018-10-01\t1753 Drag date\n1\t2018-04-27\tSystem Generated\t2018-10-01\tHave Drag date\n7\t1753-01-01\t \t2018-10-01\t1753 Drag date\n1\t2018-07-08\tSystem Generated\t2018-10-01\tHave Drag date\n1\t1753-01-01\tOverridden On Claim\t2018-10-02\t1753 Drag date\n32\t1753-01-01\t \t2018-10-02\t1753 Drag date\n1\t2018-06-23\tSystem Generated\t2018-10-03\tHave Drag date\n1\t2017-05-20\tSystem Generated\t2018-10-03\tHave Drag date\n1\t2018-07-05\tSystem Generated\t2018-10-03\tHave Drag date\n18\t1753-01-01\t \t2018-10-03\t1753 Drag date\n1\t2018-01-28\tSystem Generated\t2018-10-03\tHave Drag date\n1\t2017-01-23\tSystem Generated\t2018-10-04\tHave Drag date\n1\t2018-08-11\tSystem Generated\t2018-10-04\tHave Drag date\n1\t2018-05-27\tSystem Generated\t2018-10-04\tHave Drag date\n1\t2018-05-05\tOverridden On Claim\t2018-10-04\tHave Drag date\n1\t2018-08-09\tSystem Generated\t2018-10-04\tHave Drag date\n1\t2018-01-25\tSystem Generated\t2018-10-04\tHave Drag date\n1\t2018-02-22\tSystem Generated\t2018-10-04\tHave Drag date\n1\t2018-08-25\tSystem Generated\t2018-10-04\tHave Drag date\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537990583050_-1883915449",
+      "id": "20180926-153623_1692071012",
+      "dateCreated": "2018-09-26 15:36:23.050",
+      "dateStarted": "2018-10-04 12:06:16.949",
+      "dateFinished": "2018-10-04 12:06:32.273",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nprintln(\"\"\"%html \u003cb\u003eSearch Drag date claims \"\"\")\n\nvar clcl_start_date\u003dgetDate(z.input(\"Claims start date\", \"2018-01-01\"))\nvar clcl_end_date\u003dgetDate(z.input(\"Claims end date\", \"2019-01-01\"))\nvar drag_act_past_result\u003d dragdt_past_data.toDF().sqlContext.sql(s\"Select CLAIM_ID as CLAIMS ,DRAG_DT , REASON ,RECIEVED_DT ,Type from past_drag_dt WHERE RECIEVED_DT \u003e\u003d\u0027$clcl_start_date\u0027 and RECIEVED_DT \u003c\u003d\u0027$clcl_end_date\u0027 \")\nvar drag_act_1753_result\u003d dragdt_past_data.toDF().sqlContext.sql(s\"Select CLAIM_ID AS CLAIMS ,DRAG_DT , REASON ,RECIEVED_DT ,Type from 1753_drag_dt WHERE RECIEVED_DT \u003e\u003d\u0027$clcl_start_date\u0027 and RECIEVED_DT \u003c\u003d\u0027$clcl_end_date\u0027 \")\nz.show(drag_act_past_result.union(drag_act_1753_result))",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-04 12:06:32.333",
+      "config": {
+        "colWidth": 4.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "1": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {
+                    "columns": [
+                      {
+                        "name": "CLAIMS",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "DRAG_DT",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "REASON",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {
+                          "priority": 0.0,
+                          "direction": "asc"
+                        },
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "RECIEVED_DT",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "Type",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      }
+                    ],
+                    "scrollFocus": {},
+                    "selection": [],
+                    "grouping": {
+                      "grouping": [],
+                      "aggregations": [],
+                      "rowExpandedStates": {}
+                    },
+                    "treeView": {},
+                    "pagination": {
+                      "paginationCurrentPage": 1.0,
+                      "paginationPageSize": 250.0
+                    }
+                  },
+                  "tableColumnTypeState": {
+                    "names": {
+                      "CLAIMS": "string",
+                      "DRAG_DT": "string",
+                      "REASON": "string",
+                      "RECIEVED_DT": "string",
+                      "Type": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {
+          "Claims start date": "2018-01-01",
+          "Claims end date": "2019-01-01"
+        },
+        "forms": {
+          "Claims start date": {
+            "type": "TextBox",
+            "name": "Claims start date",
+            "displayName": "Claims start date",
+            "defaultValue": "2018-01-01",
+            "hidden": false
+          },
+          "Claims end date": {
+            "type": "TextBox",
+            "name": "Claims end date",
+            "displayName": "Claims end date",
+            "defaultValue": "2019-01-01",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cb\u003eSearch Drag date claims \r\n"
+          },
+          {
+            "type": "TABLE",
+            "data": "CLAIMS\tDRAG_DT\tREASON\tRECIEVED_DT\tType\n﻿18228B320800\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18206B003500\t2018-08-18\tSystem Generated\t2018-07-25\tHave Drag date\n18227C030400\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18221C365200\t2018-09-02\tSystem Generated\t2018-08-09\tHave Drag date\n18228A142800\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18226E842500\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18228A714500\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18232E414500\t2018-09-06\tSystem Generated\t2018-08-20\tHave Drag date\n18219A441000\t2018-08-31\tSystem Generated\t2018-08-07\tHave Drag date\n18226D765300\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18233C894800\t2018-09-09\tSystem Generated\t2018-08-21\tHave Drag date\n18001B132603\t2018-01-25\tSystem Generated\t2018-10-04\tHave Drag date\n18227D831700\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18101D281602\t2018-05-05\tOverridden On Claim\t2018-10-04\tHave Drag date\n18226B852500\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18232A058400\t2018-09-06\tSystem Generated\t2018-08-20\tHave Drag date\n18228A155300\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18232C347200\t2018-09-06\tSystem Generated\t2018-08-20\tHave Drag date\n18222D286800\t2018-08-26\tSystem Generated\t2018-08-10\tHave Drag date\n18219B949700\t2018-08-31\tSystem Generated\t2018-08-07\tHave Drag date\n18226E199700\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n173421097902\t2018-01-01\tSystem Generated\t2018-09-27\tHave Drag date\n18220A074600\t2018-09-01\tSystem Generated\t2018-08-08\tHave Drag date\n18227C046300\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18228A901500\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18227A204600\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18227D893900\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18226D550600\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18228A379000\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18225A032900\t2018-09-06\tSystem Generated\t2018-08-13\tHave Drag date\n18228B334100\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n163651306401\t2017-01-23\tSystem Generated\t2018-10-04\tHave Drag date\n18176C088601\t2018-07-05\tSystem Generated\t2018-09-28\tHave Drag date\n18221B186200\t2018-09-02\tSystem Generated\t2018-08-09\tHave Drag date\n18046C317902\t2018-05-27\tSystem Generated\t2018-10-04\tHave Drag date\n18205A823800\t2018-08-17\tSystem Generated\t2018-07-24\tHave Drag date\n18229D111400\t2018-09-06\tSystem Generated\t2018-08-17\tHave Drag date\n18228D281000\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18004B656301\t2018-01-28\tSystem Generated\t2018-10-03\tHave Drag date\n18227C219000\t2018-08-17\tSystem Generated\t2018-08-15\tHave Drag date\n18226B588700\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18227A826600\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18218E386800\t2018-08-30\tSystem Generated\t2018-08-06\tHave Drag date\n173181361502\t2017-12-08\tSystem Generated\t2018-09-28\tHave Drag date\n18221D401300\t2018-09-02\tSystem Generated\t2018-08-09\tHave Drag date\n18225A694500\t2018-09-06\tSystem Generated\t2018-08-13\tHave Drag date\n18212C082700\t2018-08-24\tSystem Generated\t2018-07-31\tHave Drag date\n18227A855900\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n173110245602\t2017-12-01\tSystem Generated\t2018-09-28\tHave Drag date\n18227D235400\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18226F033300\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18226D924300\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18218E245300\t2018-08-30\tSystem Generated\t2018-08-06\tHave Drag date\n18221C123800\t2018-09-02\tSystem Generated\t2018-08-09\tHave Drag date\n18227E029500\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18226D274800\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18227C313900\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18226D284000\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18218D623400\t2018-08-30\tSystem Generated\t2018-08-06\tHave Drag date\n18226D290800\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18229D407701\t2018-08-19\tSystem Generated\t2018-08-17\tHave Drag date\n18214D672400\t2018-08-04\tSystem Generated\t2018-08-02\tHave Drag date\n18249F377000\t2018-09-08\tSystem Generated\t2018-09-06\tHave Drag date\n18205D333201\t2018-07-26\tSystem Generated\t2018-07-24\tHave Drag date\n18207B665901\t2018-07-28\tSystem Generated\t2018-07-26\tHave Drag date\n18222C412801\t2018-08-12\tSystem Generated\t2018-08-10\tHave Drag date\n18243A122501\t2018-09-02\tSystem Generated\t2018-08-31\tHave Drag date\n18206B733901\t2018-07-27\tSystem Generated\t2018-07-25\tHave Drag date\n18227D457501\t2018-08-17\tSystem Generated\t2018-08-15\tHave Drag date\n18226A974900\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18029B667201\t2018-02-22\tSystem Generated\t2018-09-27\tHave Drag date\n18222A095600\t2018-09-03\tSystem Generated\t2018-08-10\tHave Drag date\n18221B802600\t2018-09-02\tSystem Generated\t2018-08-09\tHave Drag date\n18227B294000\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18228A740700\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18134D816100\t2018-06-07\tOverridden On Claim\t2018-05-14\tHave Drag date\n18227C033900\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18226E256100\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18228D592500\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18227B057000\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18228A925000\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18228D206900\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18226F401700\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18228B563300\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18228C990100\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18227B442800\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18226F617500\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18226B014400\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18227C504600\t2018-08-17\tSystem Generated\t2018-08-15\tHave Drag date\n18227C930400\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18218A567200\t2018-08-30\tSystem Generated\t2018-08-06\tHave Drag date\n172572158302\t2017-10-08\tSystem Generated\t2018-09-28\tHave Drag date\n18218E486900\t2018-08-30\tSystem Generated\t2018-08-06\tHave Drag date\n18211F043000\t2018-08-17\tSystem Generated\t2018-07-30\tHave Drag date\n18227D748300\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18228A880600\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18218E381100\t2018-08-30\tSystem Generated\t2018-08-06\tHave Drag date\n18226E132000\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18225A871900\t2018-09-06\tSystem Generated\t2018-08-13\tHave Drag date\n171870943602\t2017-07-30\tSystem Generated\t2018-09-28\tHave Drag date\n18226A748900\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18220D873000\t2018-09-01\tSystem Generated\t2018-08-08\tHave Drag date\n18227B499700\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18226F927000\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18220D379500\t2018-09-01\tSystem Generated\t2018-08-08\tHave Drag date\n18226F285800\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18226D875000\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18226E888800\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18220B907200\t2018-09-01\tSystem Generated\t2018-08-08\tHave Drag date\n18226C019600\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18220D697500\t2018-09-01\tSystem Generated\t2018-08-08\tHave Drag date\n18218D016100\t2018-08-30\tSystem Generated\t2018-08-06\tHave Drag date\n171160257101\t2017-05-20\tSystem Generated\t2018-10-03\tHave Drag date\n18218E362000\t2018-08-30\tSystem Generated\t2018-08-06\tHave Drag date\n172402527602\t2017-09-21\tSystem Generated\t2018-09-27\tHave Drag date\n18226E870600\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18226D392900\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18228B451800\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18227D249800\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18228A434100\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18220D254000\t2018-09-01\tSystem Generated\t2018-08-08\tHave Drag date\n18221B933000\t2018-09-02\tSystem Generated\t2018-08-09\tHave Drag date\n18206A328700\t2018-08-18\tSystem Generated\t2018-07-25\tHave Drag date\n18220C484700\t2018-09-01\tSystem Generated\t2018-08-08\tHave Drag date\n18226A217600\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18225A215200\t2018-09-06\tSystem Generated\t2018-08-13\tHave Drag date\n18150D020102\t2018-06-23\tSystem Generated\t2018-10-03\tHave Drag date\n18094A160001\t2018-04-28\tSystem Generated\t2018-09-28\tHave Drag date\n18227A878000\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n173142278902\t2017-12-04\tSystem Generated\t2018-09-28\tHave Drag date\n18219B924100\t2018-08-31\tSystem Generated\t2018-08-07\tHave Drag date\n18226A552300\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18029A288002\t2018-02-22\tSystem Generated\t2018-10-04\tHave Drag date\n18226B177400\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18213B533001\t2018-08-25\tSystem Generated\t2018-10-04\tHave Drag date\n18227E113400\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18229E297000\t2018-08-19\tSystem Generated\t2018-08-17\tHave Drag date\n18228D074400\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18219B927900\t2018-08-31\tSystem Generated\t2018-08-07\tHave Drag date\n18219B967900\t2018-08-31\tSystem Generated\t2018-08-07\tHave Drag date\n18228A047900\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18228B362200\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18197C683101\t2018-08-09\tSystem Generated\t2018-10-04\tHave Drag date\n18199B471801\t2018-08-11\tSystem Generated\t2018-10-04\tHave Drag date\n18227E384900\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18226F145300\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18222A049700\t2018-09-03\tSystem Generated\t2018-08-10\tHave Drag date\n18162D972401\t2018-07-05\tSystem Generated\t2018-10-03\tHave Drag date\n18226D449500\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18026B622602\t2018-02-19\tSystem Generated\t2018-09-27\tHave Drag date\n18220D822000\t2018-09-01\tSystem Generated\t2018-08-08\tHave Drag date\n18228A052800\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18227B263900\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18226C239900\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18221D193000\t2018-09-02\tSystem Generated\t2018-08-09\tHave Drag date\n18228B355600\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18221A312000\t2018-09-02\tSystem Generated\t2018-08-09\tHave Drag date\n18228B404800\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18219B950200\t2018-08-31\tSystem Generated\t2018-08-07\tHave Drag date\n18221A771000\t2018-09-02\tSystem Generated\t2018-08-09\tHave Drag date\n18226A317100\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n18228C601400\t2018-09-09\tSystem Generated\t2018-08-16\tHave Drag date\n18093A184601\t2018-04-27\tSystem Generated\t2018-10-01\tHave Drag date\n18212D658800\t2018-08-24\tSystem Generated\t2018-07-31\tHave Drag date\n18220D355800\t2018-09-01\tSystem Generated\t2018-08-08\tHave Drag date\n18219A877300\t2018-08-31\tSystem Generated\t2018-08-07\tHave Drag date\n18220B812200\t2018-09-01\tSystem Generated\t2018-08-08\tHave Drag date\n18227D773000\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18165B245001\t2018-07-08\tSystem Generated\t2018-10-01\tHave Drag date\n18221B127300\t2018-09-02\tSystem Generated\t2018-08-09\tHave Drag date\n18227C681600\t2018-09-08\tSystem Generated\t2018-08-15\tHave Drag date\n18221B177800\t2018-09-02\tSystem Generated\t2018-08-09\tHave Drag date\n18211E692000\t2018-08-23\tSystem Generated\t2018-07-30\tHave Drag date\n18226B213400\t2018-09-07\tSystem Generated\t2018-08-14\tHave Drag date\n﻿18275D853600\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18276E365800\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18274F811400\t1753-01-01\t \t2018-10-01\t1753 Drag date\n18276E206600\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18276C595000\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18275D485600\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18274G247700\t1753-01-01\t \t2018-10-01\t1753 Drag date\n18275E936000\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275C537100\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18263A215100\t1753-01-01\t \t2018-09-20\t1753 Drag date\n18236D680200\t1753-01-01\tOverridden On Claim\t2018-08-24\t1753 Drag date\n18271E681400\t1753-01-01\tOverridden On Claim\t2018-09-28\t1753 Drag date\n18270F485400\t1753-01-01\tOverridden On Claim\t2018-09-27\t1753 Drag date\n18275C296400\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18226F209400\t1753-01-01\t \t2018-08-14\t1753 Drag date\n18213A313701\t1753-01-01\t \t2018-09-19\t1753 Drag date\n18274J535400\t1753-01-01\t \t2018-10-01\t1753 Drag date\n18271A173300\t1753-01-01\tOverridden On Claim\t2018-09-28\t1753 Drag date\n18270C928600\t1753-01-01\tOverridden On Claim\t2018-09-27\t1753 Drag date\n18242B590001\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18275C340400\t1753-01-01\tOverridden On Claim\t2018-10-02\t1753 Drag date\n18253D664000\t1753-01-01\t \t2018-09-10\t1753 Drag date\n18274B204800\t1753-01-01\t \t2018-10-01\t1753 Drag date\n18274B063000\t1753-01-01\tOverridden On Claim\t2018-10-01\t1753 Drag date\n18255E358301\t1753-01-01\t \t2018-09-26\t1753 Drag date\n18263A078100\t1753-01-01\tOverridden On Claim\t2018-09-20\t1753 Drag date\n18206D183001\t1753-01-01\t \t2018-07-25\t1753 Drag date\n18254D483101\t1753-01-01\t \t2018-09-24\t1753 Drag date\n18269D543800\t1753-01-01\t \t2018-09-26\t1753 Drag date\n18270C878500\t1753-01-01\t \t2018-09-27\t1753 Drag date\n18260D472100\t1753-01-01\t \t2018-09-17\t1753 Drag date\n18269D018500\t1753-01-01\t \t2018-09-26\t1753 Drag date\n18180B719001\t1753-01-01\t \t2018-09-28\t1753 Drag date\n18271B084700\t1753-01-01\tOverridden On Claim\t2018-09-28\t1753 Drag date\n18271E291400\t1753-01-01\t \t2018-09-28\t1753 Drag date\n18121C541001\t1753-01-01\t \t2018-08-08\t1753 Drag date\n18262D802200\t1753-01-01\tOverridden On Claim\t2018-09-19\t1753 Drag date\n18275C663700\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18227D723001\t1753-01-01\t \t2018-08-15\t1753 Drag date\n18270C906200\t1753-01-01\t \t2018-09-27\t1753 Drag date\n18267E759500\t1753-01-01\t \t2018-09-24\t1753 Drag date\n18256E382400\t1753-01-01\t \t2018-09-13\t1753 Drag date\n18253C245501\t1753-01-01\t \t2018-09-24\t1753 Drag date\n18176A448401\t1753-01-01\t \t2018-10-01\t1753 Drag date\n18275E925400\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18274I045500\t1753-01-01\t \t2018-10-01\t1753 Drag date\n18275D647800\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275C617000\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18276D907600\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18275G081700\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275D491500\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275F366300\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18276D326400\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18274F616000\t1753-01-01\t \t2018-10-01\t1753 Drag date\n18235D990100\t1753-01-01\t \t2018-08-23\t1753 Drag date\n18276E424700\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18276D232700\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18275D073200\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18276E649500\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18275C498500\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275E446100\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275C183400\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275D087000\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18276D519100\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18275D100000\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275C405600\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275F343800\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275C553200\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275E840100\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275C968700\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275D827800\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18276E372100\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18276C395100\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18275C082000\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275E726300\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275D741800\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18276D968900\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18226F111300\t1753-01-01\t \t2018-08-14\t1753 Drag date\n18275F364600\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275F214500\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18275F563100\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18276E121300\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18275C242500\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18276C803000\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18275G045200\t1753-01-01\t \t2018-10-02\t1753 Drag date\n18276E478500\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18276C995200\t1753-01-01\t \t2018-10-03\t1753 Drag date\n18276C889000\t1753-01-01\t \t2018-10-03\t1753 Drag date\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537992153639_266495830",
+      "id": "20180926-160233_1904430955",
+      "dateCreated": "2018-09-26 16:02:33.639",
+      "dateStarted": "2018-10-04 12:06:32.766",
+      "dateFinished": "2018-10-04 12:06:38.678",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nimport java.net.URL\nimport java.nio.charset.Charset\nimport java.text.SimpleDateFormat\nimport java.util.Calendar\nimport java.sql.Date\nimport java.sql.Timestamp\nprintln(\"\"\"%html \u003cb\u003e Claims Ready for payment but no check issued (False Positive) \"\"\")\n\nvar clcl_start_date\u003dgetDate(z.input(\"Claims start date\", \"2018-01-01\"))\nvar clcl_end_date\u003dgetDate(z.input(\"Claims end date\", \"2019-01-01\"))\nval claims_no_check \u003d sc.parallelize(IOUtils.toString(new URL(\"file:///C:/Users/224597/Documents/CLAIMS/DATA/claims_with_no_check_1004.csv\"),Charset.forName(\"utf8\")).split(\"\\n\"))\ncase class claims_no_checkdf(CLAIM_ID:String ,RECEIVED_DT :java.sql.Date,CLAIM_AMT:String)\nval claims_no_check_df \u003d claims_no_check.map(s\u003d\u003es.split(\",\")).map(\n    s\u003d\u003eclaims_no_checkdf(\n        s(0).replaceAll(\"\\\"\", \"\"), \n       getDate(s(1)),\n         s(2).replaceAll(\"\\\"\", \"\")\n        )\n)\n\nclaims_no_check_df.toDF().registerTempTable(\"claims_no_checks\")\nvar claims_no_check_result\u003d claims_no_check_df.toDF().sqlContext.sql(s\"SELECT count(CLAIM_ID) as COUNT_OF_CLAIMS ,RECEIVED_DT FROM  claims_no_checks WHERE RECEIVED_DT \u003e\u003d\u0027$clcl_start_date\u0027 and RECEIVED_DT \u003c\u003d\u0027$clcl_end_date\u0027 GROUP BY RECEIVED_DT ORDER BY RECEIVED_DT\")\n\nz.show(claims_no_check_result)\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-08 20:35:45.674",
+      "config": {
+        "colWidth": 4.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "1": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": true,
+              "setting": {
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "RECEIVED_DT",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "COUNT_OF_CLAIMS",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {
+          "Claims start date": "2018-09-01",
+          "Claims end date": "2019-10-01"
+        },
+        "forms": {
+          "Claims start date": {
+            "type": "TextBox",
+            "name": "Claims start date",
+            "displayName": "Claims start date",
+            "defaultValue": "2018-01-01",
+            "hidden": false
+          },
+          "Claims end date": {
+            "type": "TextBox",
+            "name": "Claims end date",
+            "displayName": "Claims end date",
+            "defaultValue": "2019-01-01",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cb\u003e Claims Ready for payment but no check issued (False Positive) \r\n"
+          },
+          {
+            "type": "TABLE",
+            "data": "COUNT_OF_CLAIMS\tRECEIVED_DT\n4\t2018-09-01\n4\t2018-09-02\n277\t2018-09-03\n111\t2018-09-04\n93\t2018-09-05\n74\t2018-09-06\n112\t2018-09-07\n9\t2018-09-08\n22\t2018-09-10\n9\t2018-09-11\n6\t2018-09-12\n3\t2018-09-13\n1\t2018-09-14\n2\t2018-09-16\n13\t2018-09-17\n4\t2018-09-18\n11\t2018-09-19\n2\t2018-09-20\n4\t2018-09-21\n2\t2018-09-23\n24\t2018-09-24\n6\t2018-09-25\n3\t2018-09-26\n21\t2018-09-27\n8\t2018-09-28\n12\t2018-09-30\n23\t2018-10-01\n11\t2018-10-02\n1\t2018-10-03\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537993367559_698971008",
+      "id": "20180926-162247_241979474",
+      "dateCreated": "2018-09-26 16:22:47.559",
+      "dateStarted": "2018-10-04 12:06:38.987",
+      "dateFinished": "2018-10-04 12:06:48.711",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-04 12:06:48.804",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1537993948625_-451351043",
+      "id": "20180926-163228_1008347480",
+      "dateCreated": "2018-09-26 16:32:28.627",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "CLAIMS_LPI",
+  "id": "2DQPZXXV1",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "MicrosoftSQL:shared_process": [],
+    "sh:shared_process": [],
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": true,
+    "looknfeel": "simple",
+    "personalizedMode": "false"
+  },
+  "info": {}
+}

@@ -1,0 +1,103 @@
+{
+  "paragraphs": [
+    {
+      "text": "%angular\n\u003cscript type\u003d\"text/javascript\" src\u003d\"//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js\"\u003e\u003c/script\u003e\n\u003clink rel\u003d\"stylesheet\" type\u003d\"text/css\" href\u003d\"//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css\" /\u003e",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-15 10:27:19.746",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "editOnDblClick": true,
+          "completionSupport": false
+        },
+        "editorMode": "ace/mode/undefined",
+        "editorHide": false,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1538672561187_-2013787101",
+      "id": "20181004-130241_1522901388",
+      "dateCreated": "2018-10-04 13:02:41.187",
+      "dateStarted": "2018-10-15 10:18:45.414",
+      "dateFinished": "2018-10-15 10:18:45.442",
+      "status": "FINISHED",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%angular\n\u003cspan\u003eDate range picker:\u003c/span\u003e\n\u003cdiv id\u003d\"reportrange\" style\u003d\"background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width:250px;\"\u003e\n    \u003ci class\u003d\"glyphicon glyphicon-calendar fa fa-calendar\"\u003e\u003c/i\u003e\u0026nbsp;\n    \u003cspan\u003e\u003c/span\u003e \u003cb class\u003d\"caret\"\u003e\u003c/b\u003e\n\u003c/div\u003e\n\u003cp\u003e\n\u003cp\u003e\n\u003cinput id\u003d\"start\" ng-model\u003d\"start\" style\u003d\"visibility: hidden;\"\u003e\u003c/input\u003e\n\u003cinput id\u003d\"end\" ng-model\u003d\"end\" style\u003d\"visibility: hidden;\"\u003e\u003c/input\u003e\n\u003cbutton type\u003d\"submit\" class\u003d\"btn btn-primary pull-right\" ng-click\u003d\"z.angularBind(\u0027start\u0027,start,20181004-130241_1522901388);z.angularBind(\u0027end\u0027,end,20181004-130241_1522901388);\"\u003e Apply\u003c/button\u003e\n\u003cscript type\u003d\"text/javascript\"\u003e\n$(function() { \n    var start \u003d moment().subtract(29, \u0027days\u0027);\n    var end \u003d moment();\n    function cb(start, end) {\n        $(\u0027#reportrange span\u0027).html(start.format(\u0027MMMM D, YYYY\u0027) + \u0027 - \u0027 + end.format(\u0027MMMM D, YYYY\u0027));\n        $(\u0027#start\u0027).val(start.toISOString());\n        $(\u0027#start\u0027).trigger(\u0027input\u0027); // Use for Chrome/Firefox/Edge\n        $(\u0027#start\u0027).trigger(\u0027change\u0027); // Use for Chrome/Firefox/Edge + IE11\n        $(\u0027#end\u0027).val(end.toISOString());\n        $(\u0027#end\u0027).trigger(\u0027input\u0027); // Use for Chrome/Firefox/Edge\n        $(\u0027#end\u0027).trigger(\u0027change\u0027); // Use for Chrome/Firefox/Edge + IE11\n    }\n\n    $(\u0027#reportrange\u0027).daterangepicker({\n        startDate: start,\n        endDate: end,\n        ranges: {\n           \u0027Today\u0027: [moment(), moment()],\n           \u0027Yesterday\u0027: [moment().subtract(1, \u0027days\u0027), moment().subtract(1, \u0027days\u0027)],\n           \u0027Last 7 Days\u0027: [moment().subtract(6, \u0027days\u0027), moment()],\n           \u0027Last 30 Days\u0027: [moment().subtract(29, \u0027days\u0027), moment()],\n           \u0027This Month\u0027: [moment().startOf(\u0027month\u0027), moment().endOf(\u0027month\u0027)],\n           \u0027Last Month\u0027: [moment().subtract(1, \u0027month\u0027).startOf(\u0027month\u0027), moment().subtract(1, \u0027month\u0027).endOf(\u0027month\u0027)]\n        }\n    }, cb);\n\n    cb(start, end);\n});\n\u003c/script\u003e",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-15 10:27:21.563",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "editOnDblClick": true,
+          "completionSupport": false
+        },
+        "editorMode": "ace/mode/undefined",
+        "editorHide": false,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "ANGULAR",
+            "data": "\u003cspan\u003eDate range picker:\u003c/span\u003e\n\u003cdiv id\u003d\"reportrange\" style\u003d\"background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width:250px;\"\u003e\n    \u003ci class\u003d\"glyphicon glyphicon-calendar fa fa-calendar\"\u003e\u003c/i\u003e\u0026nbsp;\n    \u003cspan\u003e\u003c/span\u003e \u003cb class\u003d\"caret\"\u003e\u003c/b\u003e\n\u003c/div\u003e\n\u003cp\u003e\n\u003cp\u003e\n\u003cinput id\u003d\"start\" ng-model\u003d\"start\" style\u003d\"visibility: hidden;\"\u003e\u003c/input\u003e\n\u003cinput id\u003d\"end\" ng-model\u003d\"end\" style\u003d\"visibility: hidden;\"\u003e\u003c/input\u003e\n\u003cbutton type\u003d\"submit\" class\u003d\"btn btn-primary pull-right\" ng-click\u003d\"z.angularBind(\u0027start\u0027,start,20181004-130241_1522901388);z.angularBind(\u0027end\u0027,end,20181004-130241_1522901388);\"\u003e Apply\u003c/button\u003e\n\u003cscript type\u003d\"text/javascript\"\u003e\n$(function() { \n    var start \u003d moment().subtract(29, \u0027days\u0027);\n    var end \u003d moment();\n    function cb(start, end) {\n        $(\u0027#reportrange span\u0027).html(start.format(\u0027MMMM D, YYYY\u0027) + \u0027 - \u0027 + end.format(\u0027MMMM D, YYYY\u0027));\n        $(\u0027#start\u0027).val(start.toISOString());\n        $(\u0027#start\u0027).trigger(\u0027input\u0027); // Use for Chrome/Firefox/Edge\n        $(\u0027#start\u0027).trigger(\u0027change\u0027); // Use for Chrome/Firefox/Edge + IE11\n        $(\u0027#end\u0027).val(end.toISOString());\n        $(\u0027#end\u0027).trigger(\u0027input\u0027); // Use for Chrome/Firefox/Edge\n        $(\u0027#end\u0027).trigger(\u0027change\u0027); // Use for Chrome/Firefox/Edge + IE11\n    }\n\n    $(\u0027#reportrange\u0027).daterangepicker({\n        startDate: start,\n        endDate: end,\n        ranges: {\n           \u0027Today\u0027: [moment(), moment()],\n           \u0027Yesterday\u0027: [moment().subtract(1, \u0027days\u0027), moment().subtract(1, \u0027days\u0027)],\n           \u0027Last 7 Days\u0027: [moment().subtract(6, \u0027days\u0027), moment()],\n           \u0027Last 30 Days\u0027: [moment().subtract(29, \u0027days\u0027), moment()],\n           \u0027This Month\u0027: [moment().startOf(\u0027month\u0027), moment().endOf(\u0027month\u0027)],\n           \u0027Last Month\u0027: [moment().subtract(1, \u0027month\u0027).startOf(\u0027month\u0027), moment().subtract(1, \u0027month\u0027).endOf(\u0027month\u0027)]\n        }\n    }, cb);\n\n    cb(start, end);\n});\n\u003c/script\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1538672580504_-311059690",
+      "id": "20181004-130300_2063121220",
+      "dateCreated": "2018-10-04 13:03:00.504",
+      "dateStarted": "2018-10-15 10:18:41.657",
+      "dateFinished": "2018-10-15 10:18:45.306",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%angular\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-04 13:30:26.228",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1538674226227_488312957",
+      "id": "20181004-133026_1335950903",
+      "dateCreated": "2018-10-04 13:30:26.227",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Angular",
+  "id": "2DUDY89HJ",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "md:shared_process": [],
+    "angular:shared_process": [],
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": true
+  },
+  "info": {}
+}

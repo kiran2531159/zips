@@ -1,0 +1,242 @@
+{
+  "paragraphs": [
+    {
+      "text": "%groovy\n\nimport java.io.File;\nimport java.io.FileOutputStream;\n\nimport java.sql.Connection;\nimport java.sql.DriverManager;\nimport java.sql.ResultSet;\nimport java.sql.Statement;\n\nimport org.apache.poi.xssf.usermodel.XSSFCell;\nimport org.apache.poi.xssf.usermodel.XSSFRow;\nimport org.apache.poi.xssf.usermodel.XSSFSheet;\nimport org.apache.poi.xssf.usermodel.XSSFWorkbook;\n\npublic class ExcelDatabase {\n   public static void main(String[] args) throws Exception {\n      Class.forName(\"com.mysql.jdbc.Driver\");\n      Connection connect \u003d DriverManager.getConnection( \n         \"jdbc:mysql://localhost:3306/test\" , \n         \"root\" , \n         \"root\"\n      );\n      \n      Statement statement \u003d connect.createStatement();\n      ResultSet resultSet \u003d statement.executeQuery(\"select * from emp_tbl\");\n      XSSFWorkbook workbook \u003d new XSSFWorkbook(); \n      XSSFSheet spreadsheet \u003d workbook.createSheet(\"employe db\");\n      \n      XSSFRow row \u003d spreadsheet.createRow(1);\n      XSSFCell cell;\n      cell \u003d row.createCell(1);\n      cell.setCellValue(\"EMP ID\");\n      cell \u003d row.createCell(2);\n      cell.setCellValue(\"EMP NAME\");\n      cell \u003d row.createCell(3);\n      cell.setCellValue(\"DEG\");\n      cell \u003d row.createCell(4);\n      cell.setCellValue(\"SALARY\");\n      cell \u003d row.createCell(5);\n      cell.setCellValue(\"DEPT\");\n      int i \u003d 2;\n\n      while(resultSet.next()) {\n         row \u003d spreadsheet.createRow(i);\n         cell \u003d row.createCell(1);\n         cell.setCellValue(resultSet.getInt(\"eid\"));\n         cell \u003d row.createCell(2);\n         cell.setCellValue(resultSet.getString(\"ename\"));\n         cell \u003d row.createCell(3);\n         cell.setCellValue(resultSet.getString(\"deg\"));\n         cell \u003d row.createCell(4);\n         cell.setCellValue(resultSet.getString(\"salary\"));\n         cell \u003d row.createCell(5);\n         cell.setCellValue(resultSet.getString(\"dept\"));\n         i++;\n      }\n\n      FileOutputStream out \u003d new FileOutputStream(new File(\"exceldatabase.xlsx\"));\n      workbook.write(out);\n      out.close();\n      System.out.println(\"exceldatabase.xlsx written successfully\");\n   }\n}\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-10 11:52:34.406",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "editorMode": "ace/mode/undefined"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "java.lang.RuntimeException: Failed to parse groovy script: java.lang.InstantiationException: org.codehaus.groovy.runtime.InvokerHelper$1\n at org.apache.zeppelin.groovy.GroovyInterpreter.getGroovyScript(GroovyInterpreter.java:140)"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1539046058668_-1111520794",
+      "id": "20181008-204738_473546735",
+      "dateCreated": "2018-10-08 20:47:38.668",
+      "dateStarted": "2018-10-10 11:52:34.506",
+      "dateFinished": "2018-10-10 11:52:37.626",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\n\nimport java.io._\nimport java.sql.Connection\nimport java.sql.DriverManager\nimport java.sql.ResultSet\nimport java.sql.ResultSetMetaData\nimport java.sql.Statement\nimport java.io.File\nimport java.io.FileOutputStream;\nimport org.apache.poi.xssf.usermodel.XSSFCell\nimport org.apache.poi.xssf.usermodel.XSSFRow\nimport org.apache.poi.xssf.usermodel.XSSFSheet\nimport org.apache.poi.xssf.usermodel.XSSFWorkbook\n\nobject ScalaCSVObj {\n\nvar connection:Connection \u003d null\nvar resultSet:ResultSet\u003dnull\nvar rsmd:ResultSetMetaData \u003dnull\nvar row:XSSFRow\u003dnull\n//var cell:XSSFCell\u003dnull\nval header\u003d new StringBuilder\nval record\u003d new StringBuilder\n\ndef setConnectionObj(){\n    val driver \u003d spark.conf.get(\"spark.sql.driver\")\n    val url \u003dspark.conf.get(\"spark.jdbc\")\n    val username \u003d spark.conf.get(\"spark.user\")\n    val password \u003d spark.conf.get(\"spark.pass\")\n    Class.forName(driver)\n    connection \u003d DriverManager.getConnection(url, username, password)\n}\n\n\ndef savAsCSV(Query:String,filepath:String){\n    val statement \u003d connection.createStatement()\n    resultSet \u003d statement.executeQuery(Query)\n    rsmd \u003d resultSet.getMetaData();\n    val writer \u003d new PrintWriter(new File(filepath))\n    //Write header\n    for( a \u003c- 1 to rsmd.getColumnCount() ){\n        header ++\u003d rsmd.getColumnName(a).toString+\",\"\n    }\n    \n    writer.println(header.toString.patch(header.lastIndexOf(\u0027,\u0027), \"\", 1))\n    header.setLength(0)\n    \n    //Write Records\n    while ( resultSet.next() ) {\n        for( a \u003c- 1 to rsmd.getColumnCount() ){\n            record++\u003dresultSet.getString(rsmd.getColumnName(a)).toString+\",\"\n        }\n    writer.println(record.toString.patch(record.lastIndexOf(\u0027,\u0027), \"\", 1))\n    record.setLength(0)\n    }\n    writer.close()\n\n}\ndef savAsExcel(Query:String,filepath:String,Workbookname:String){\n    val statement \u003d connection.createStatement()\n    resultSet \u003d statement.executeQuery(Query)\n    rsmd \u003d resultSet.getMetaData()\n    val workbook \u003d new XSSFWorkbook()\n    val spreadsheet \u003d workbook.createSheet(Workbookname)\n    //Write header\n    row \u003d spreadsheet.createRow(0)\n    for( a \u003c- 1 to rsmd.getColumnCount() ){\n        val  cell \u003d row.createCell(a)\n        cell.setCellValue(rsmd.getColumnName(a))\n    }\n    val out \u003d new FileOutputStream(new File(filepath))\n    workbook.write(out)\n    out.close()\n}\n\n}\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-15 10:49:41.061",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "lineNumbers": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1539202788033_2141944456",
+      "id": "20181010-161948_263062182",
+      "dateCreated": "2018-10-10 16:19:48.036",
+      "dateStarted": "2018-10-15 10:49:41.182",
+      "dateFinished": "2018-10-15 10:49:46.324",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\n\nvar result \u003dScalaCSVObj.setConnectionObj()\n\nvar sqlTring \u003d s\"\"\"SELECT  DISTINCT (CLCL_ID) AS CLAIMS, CAST(CLCL_INPUT_DT AS DATE) as DATE_OF_CLAIMS , CLCL_CUR_STS  AS CLAIM_STS  FROM  [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.CMC_CLCL_CLAIM  WHERE  CLCL_CUR_STS IN (11,15) AND  CLCL_INPUT_DT \u003e\u003d \u00272018-01-01\u0027 and (CLCL_ID NOT IN ( SELECT WQMS_MESSAGE_ID FROM [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.NWX_WQMS_QUEUE_MSG ) AND CLCL_ID NOT IN (SELECT WQMS_MESSAGE_ID FROM [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.NWX_WFLI_LOCK_ITEM))\"\"\"\n\n//var result \u003d ScalaCSVObj.savAsCSV(sqlTring,\"C:/Users/224597/Documents/CLAIMS/senario1.csv\")\n//var result \u003dScalaCSVObj.savAsExcel(sqlTring,\"C:/Users/224597/Documents/CLAIMS/senario1.xlsx\",\"senario1\")\n\nsqlTring \u003d s\"\"\"SELECT  DISTINCT (CLCL_ID) AS CLAIMS, CAST(CLCL_INPUT_DT AS DATE) as DATE_OF_CLAIMS , CLCL_CUR_STS  AS CLAIM_STS  FROM  [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0xc.dbo.CMC_CLCL_CLAIM  WHERE  CLCL_CUR_STS IN (11,15) AND  CLCL_INPUT_DT \u003e\u003d \u00272018-01-01\u0027  and (CLCL_ID NOT IN ( SELECT WQMS_MESSAGE_ID FROM [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.NWX_WQMS_QUEUE_MSG ) AND CLCL_ID NOT IN (SELECT WQMS_MESSAGE_ID FROM [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.NWX_WFLI_LOCK_ITEM))\"\"\"\n//var result \u003d ScalaCSVObj.savAsCSV(sqlTring,\"C:/Users/224597/Documents/CLAIMS/senario2.csv\")\nvar result \u003dScalaCSVObj.savAsExcel(sqlTring,\"C:/Users/224597/Documents/CLAIMS/senario2.xlsx\",\"senario2\")\nvar sqlTring\u003ds\"\"\"SELECT   WQMS_MESSAGE_ID   ,WQMS_PRIORITY,WQMS_STATUS ,WQMS_RECEIVED_DT  FROM  [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.NWX_WQMS_QUEUE_MSG WQMS WHERE  WQMS.WMGT_MSG_TYPE \u003d1  and WQMS_MESSAGE_ID not in ( select CLCL_ID FROM   [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.CMC_CLCL_CLAIM WHERE CLCL_CUR_STS IN (11,15) ) and WQMS_MESSAGE_ID not in ( select CLCL_ID FROM   [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.CMC_CLCL_CLAIM WHERE CLCL_CUR_STS IN (11,15) ) AND WQMS_MESSAGE_ID NOT IN (SELECT WQMS_MESSAGE_ID FROM [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.NWX_WFLI_LOCK_ITEM)\"\"\"\n//var result \u003d ScalaCSVObj.savAsCSV(sqlTring,\"C:/Users/224597/Documents/CLAIMS/senario3.csv\")\nvar result \u003dScalaCSVObj.savAsExcel(sqlTring,\"C:/Users/224597/Documents/CLAIMS/senario3.xlsx\",\"senario3\")\nvar sqlTring\u003ds\"\"\"select   CLCL_ID, CLCL_DRAG_DT, CASE WHEN CLCL_DRAG_OR_IND \u003d\u0027S\u0027 THEN \u0027System Generated\u0027 when CLCL_DRAG_OR_IND \u003d\u0027W\u0027  THEN \u0027Generatedby Workflow\u0027 WHEN CLCL_DRAG_OR_IND \u003d\u0027O\u0027  THEN \u0027Overridden On Claim\u0027 ELSE CLCL_DRAG_OR_IND   END AS REASON, CAST(CLCL_INPUT_DT AS DATE) as DATE_OF_CLAIMS from  [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.CMC_CLCL_CLAIM  where   CLCL_CUR_STS IN (01) and CLCL_DRAG_DT \u003c\u003d DATEADD(day, DATEDIFF(day, 25, GETDATE()), 0) and CLCL_DRAG_DT \u003c\u003e \u002701/01/1753\u0027\"\"\"\n//var result \u003d ScalaCSVObj.savAsCSV(sqlTring,\"C:/Users/224597/Documents/CLAIMS/senario4.csv\")\nvar result \u003dScalaCSVObj.savAsExcel(sqlTring,\"C:/Users/224597/Documents/CLAIMS/senario4.xlsx\",\"senario4\")\nvar sqlTring\u003ds\"\"\"select  \nCLCL_ID,\nCLCL_DRAG_DT,\nCASE WHEN CLCL_DRAG_OR_IND \u003d\u0027S\u0027 THEN \u0027System Generated\u0027\n     when CLCL_DRAG_OR_IND \u003d\u0027W\u0027  THEN \u0027Generatedby Workflow\u0027\n\t WHEN CLCL_DRAG_OR_IND \u003d\u0027O\u0027  THEN \u0027Overridden On Claim\u0027\n\t ELSE CLCL_DRAG_OR_IND  \nEND AS REASON,\nCAST(CLCL_INPUT_DT AS DATE) as DATE_OF_CLAIMS\nfrom \n[CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.CMC_CLCL_CLAIM \nwhere  \nCLCL_CUR_STS IN (01) and CLCL_DRAG_DT \u003d \u002701/01/1753\u0027\"\"\"\n//var result \u003d ScalaCSVObj.savAsCSV(sqlTring,\"C:/Users/224597/Documents/CLAIMS/senario5.csv\")\nvar result \u003dScalaCSVObj.savAsExcel(sqlTring,\"C:/Users/224597/Documents/CLAIMS/senario5.xlsx\",\"senario5\")\n/*var sqlTring\u003ds\"\"\"select   CLCL_ID ,CLCL_INPUT_DT ,CLCL_TOT_PAYABLE \nfrom [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.CMC_CLCL_CLAIM  \nwhere   \nCLCL_CUR_STS IN (02) AND \nCLCL_INPUT_DT \u003e\u003d \u00272018-08-01\u0027  AND \nCLCL_ID NOT IN ( select   CLCK.CLCL_ID from  [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.CMC_CLCL_CLAIM CLCL, [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.CMC_CLCK_CLM_CHECK CLCK , [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.CMC_CKCK_CHECK CKCK where   CLCL.CLCL_CUR_STS IN (02) AND CLCL.CLCL_ID \u003d CLCK.CLCL_ID AND CLCL.CLCL_INPUT_DT \u003e\u003d \u00272018-08-01\u0027  AND CLCK.CKPY_REF_ID \u003d CKCK.CKPY_REF_ID ) and CLCL_ID NOT IN ( SELECT CLCL_ID FROM [CSN-TPZ-SQL-03\\\\PR02A].fabncpr0.dbo.CMC_CLCK_CLM_CHECK CLCK WHERE CLCK_NET_AMT \u003e0) \"\"\"\nvar result \u003d ScalaCSVObj.savAsCSV(sqlTring,\"C:/Users/224597/Documents/CLAIMS/senario6.csv\")*/\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-15 10:55:54.075",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1539285781144_-1182089375",
+      "id": "20181011-152301_1340920306",
+      "dateCreated": "2018-10-11 15:23:01.144",
+      "dateStarted": "2018-10-15 10:55:54.220",
+      "dateFinished": "2018-10-15 10:56:22.204",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%MicrosoftSQL\n\nSELECT \nDISTINCT (CLCL_ID) AS CLAIMS,\nCAST(CLCL_INPUT_DT AS DATE) as DATE_OF_CLAIMS ,\nCLCL_CUR_STS  AS CLAIM_STS ,\n\u0027NON- XC\u0027 as SOURCE_SYSTEM\nFROM  [CSN-TPZ-SQL-03\\PR02A].fabncpr0.dbo.CMC_CLCL_CLAIM \nWHERE \nCLCL_CUR_STS IN (11,15) AND  CLCL_INPUT_DT \u003e\u003d \u00272018-01-01\u0027 \nand (CLCL_ID NOT IN ( SELECT WQMS_MESSAGE_ID FROM [CSN-TPZ-SQL-03\\PR02A].fabncpr0.dbo.NWX_WQMS_QUEUE_MSG ) AND CLCL_ID NOT IN (SELECT WQMS_MESSAGE_ID FROM [CSN-TPZ-SQL-03\\PR02A].fabncpr0.dbo.NWX_WFLI_LOCK_ITEM))\nUnion\nSELECT \nDISTINCT (CLCL_ID) AS CLAIMS,\nCAST(CLCL_INPUT_DT AS DATE) as DATE_OF_CLAIMS ,\nCLCL_CUR_STS  AS CLAIM_STS ,\n\u0027XC\u0027 as SOURCE_SYSTEM\nFROM  [CSN-TPZ-SQL-03\\PR02A].fabncpr0xc.dbo.CMC_CLCL_CLAIM \nWHERE \nCLCL_CUR_STS IN (11,15) AND  CLCL_INPUT_DT \u003e\u003d \u00272018-01-01\u0027 \nand (CLCL_ID NOT IN ( SELECT WQMS_MESSAGE_ID FROM [CSN-TPZ-SQL-03\\PR02A].fabncpr0.dbo.NWX_WQMS_QUEUE_MSG ) AND CLCL_ID NOT IN (SELECT WQMS_MESSAGE_ID FROM [CSN-TPZ-SQL-03\\PR02A].fabncpr0.dbo.NWX_WFLI_LOCK_ITEM))\nORDER BY DATE_OF_CLAIMS\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-15 10:49:30.606",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": true,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "CLAIMS": "string",
+                      "DATE_OF_CLAIMS": "string",
+                      "CLAIM_STS": "string",
+                      "SOURCE_SYSTEM": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default",
+                  "stacked": false
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "DATE_OF_CLAIMS",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [
+                {
+                  "name": "SOURCE_SYSTEM",
+                  "index": 3.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [
+                {
+                  "name": "CLAIMS",
+                  "index": 0.0,
+                  "aggr": "count"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "CLAIMS\tDATE_OF_CLAIMS\tCLAIM_STS\tSOURCE_SYSTEM\n18158A106700\t2018-06-07\t11\tNON- XC\n18163C926500\t2018-06-12\t11\tNON- XC\n18163D479200\t2018-06-12\t11\tNON- XC\n18165B112200\t2018-06-14\t11\tNON- XC\n18171C120200\t2018-06-20\t11\tNON- XC\n18130C699300\t2018-07-10\t15\tXC\n18197E495300\t2018-07-16\t11\tNON- XC\n18169A656400\t2018-07-19\t15\tXC\n18173A349300\t2018-07-19\t15\tXC\n18200B102400\t2018-07-19\t11\tNON- XC\n18200D844600\t2018-07-19\t11\tNON- XC\n170720378400\t2018-07-20\t15\tXC\n170741088000\t2018-07-20\t15\tXC\n18025A871701\t2018-07-20\t15\tXC\n18033A253302\t2018-07-20\t15\tXC\n18040B377401\t2018-07-20\t15\tXC\n18045B368302\t2018-07-20\t15\tXC\n18088A563500\t2018-07-20\t15\tXC\n18122B306701\t2018-07-20\t15\tXC\n18136A320500\t2018-07-20\t15\tXC\n18141D405800\t2018-07-20\t15\tXC\n18143A216200\t2018-07-20\t15\tXC\n18151A459700\t2018-07-20\t15\tXC\n18152B315400\t2018-07-20\t15\tXC\n18155B147500\t2018-07-20\t15\tXC\n18156A999200\t2018-07-20\t15\tXC\n18157C151200\t2018-07-20\t15\tXC\n18164A118800\t2018-07-20\t15\tXC\n18171B656300\t2018-07-20\t15\tXC\n18171C020900\t2018-07-20\t15\tXC\n18171C127100\t2018-07-20\t15\tXC\n18173A790700\t2018-07-20\t15\tXC\n18220D927400\t2018-08-08\t11\tNON- XC\n18162C972100\t2018-08-23\t15\tXC\n18227A968200\t2018-08-30\t15\tXC\n18254D736400\t2018-09-11\t11\tNON- XC\n18267E474500\t2018-09-24\t11\tNON- XC\n18274K322000\t2018-10-01\t11\tNON- XC\n18275G212900\t2018-10-02\t15\tXC\n18282H637700\t2018-10-09\t15\tXC\n18282H638100\t2018-10-09\t15\tXC\n18282H644500\t2018-10-09\t15\tXC\n18282H644600\t2018-10-09\t15\tXC\n18282H647600\t2018-10-09\t15\tXC\n18282H648200\t2018-10-09\t15\tXC\n18282H648800\t2018-10-09\t15\tXC\n18282H651500\t2018-10-09\t15\tXC\n18282H652500\t2018-10-09\t15\tXC\n18282H653100\t2018-10-09\t15\tXC\n18282H657200\t2018-10-09\t15\tXC\n18282H658000\t2018-10-09\t15\tXC\n18282H658200\t2018-10-09\t15\tXC\n18282H666300\t2018-10-09\t15\tXC\n18282H666700\t2018-10-09\t15\tXC\n18282H672200\t2018-10-09\t15\tXC\n18282H674900\t2018-10-09\t15\tXC\n18282H677200\t2018-10-09\t15\tXC\n18282H677500\t2018-10-09\t15\tXC\n18282H680400\t2018-10-09\t15\tXC\n18282H685700\t2018-10-09\t15\tXC\n18282H687300\t2018-10-09\t15\tXC\n18282H693200\t2018-10-09\t15\tXC\n18282H694900\t2018-10-09\t15\tXC\n18282H702600\t2018-10-09\t15\tXC\n18282H702900\t2018-10-09\t15\tXC\n18282H704400\t2018-10-09\t15\tXC\n18282H706700\t2018-10-09\t15\tXC\n18282H709000\t2018-10-09\t15\tXC\n18282H709400\t2018-10-09\t15\tXC\n18282H716400\t2018-10-09\t15\tXC\n18282H720300\t2018-10-09\t15\tXC\n18282H720500\t2018-10-09\t15\tXC\n18282H720800\t2018-10-09\t15\tXC\n18282H726500\t2018-10-09\t15\tXC\n18282H727000\t2018-10-09\t15\tXC\n18282H727400\t2018-10-09\t15\tXC\n18282H731100\t2018-10-09\t15\tXC\n18282H734100\t2018-10-09\t15\tXC\n18282H741800\t2018-10-09\t15\tXC\n18282H754500\t2018-10-09\t15\tXC\n18282H754700\t2018-10-09\t15\tXC\n18282H755100\t2018-10-09\t15\tXC\n18282H755800\t2018-10-09\t15\tXC\n18282H761500\t2018-10-09\t15\tXC\n18282H766700\t2018-10-09\t15\tXC\n18282H769300\t2018-10-09\t15\tXC\n18282H774200\t2018-10-09\t15\tXC\n18282H779600\t2018-10-09\t15\tXC\n18282H779900\t2018-10-09\t15\tXC\n18282H782000\t2018-10-09\t15\tXC\n18282H782800\t2018-10-09\t15\tXC\n18282H787300\t2018-10-09\t15\tXC\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1539028730257_2141291853",
+      "id": "20181008-155850_1075669838",
+      "dateCreated": "2018-10-08 15:58:50.257",
+      "dateStarted": "2018-10-10 15:49:37.879",
+      "dateFinished": "2018-10-10 15:49:59.088",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%MicrosoftSQL\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-08 15:59:26.331",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1539028766328_-1240485853",
+      "id": "20181008-155926_232637733",
+      "dateCreated": "2018-10-08 15:59:26.328",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "CLAIMS_LPI_NEW",
+  "id": "2DRNDYGJG",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "MicrosoftSQL:shared_process": [],
+    "md:shared_process": [],
+    "angular:shared_process": [],
+    "groovy:shared_process": [],
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": true
+  },
+  "info": {}
+}

@@ -1,0 +1,297 @@
+{
+  "paragraphs": [
+    {
+      "text": "%sh\ndel C:\\Users\\224597\\Downloads\\zeppelin-0.8.0-bin-all\\bin\\spark-warehouse\\flights_2007_new.csv\ndel C:\\Users\\224597\\Downloads\\zeppelin-0.8.0-bin-all\\bin\\spark-warehouse\\flights_2008_new.csv\npowershell Get-Content C:\\Users\\224597\\Downloads\\zeppelin-0.8.0-bin-all\\bin\\spark-warehouse\\flights_2007.csv -TotalCount 5000 \u003e C:\\Users\\224597\\Downloads\\zeppelin-0.8.0-bin-all\\bin\\spark-warehouse\\flights_2007_new.csv\npowershell Get-Content C:\\Users\\224597\\Downloads\\zeppelin-0.8.0-bin-all\\bin\\spark-warehouse\\flights_2008.csv -TotalCount 5000 \u003e C:\\Users\\224597\\Downloads\\zeppelin-0.8.0-bin-all\\bin\\spark-warehouse\\flights_2008_new.csv\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-02 16:18:25.526",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1538503422694_376482171",
+      "id": "20181002-140342_210025969",
+      "dateCreated": "2018-10-02 14:03:42.694",
+      "dateStarted": "2018-10-02 16:18:25.578",
+      "dateFinished": "2018-10-02 16:18:30.434",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nimport org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\nimport java.text.SimpleDateFormat\nimport java.util.Calendar\nimport java.sql.Date\nimport java.sql.Timestamp\nimport org.apache.spark.mllib.linalg.Vectors\nimport org.apache.spark.ml.attribute.NominalAttribute\nimport org.apache.spark.sql.Row\nimport org.apache.spark.sql.types.{StructType,StructField,StringType}\nimport org.apache.spark.ml.feature.StringIndexer\nimport org.apache.spark.ml.feature.VectorAssembler\nimport org.apache.spark.ml.classification.LogisticRegression\nimport org.apache.spark.ml.feature.Binarizer\nimport org.apache.spark.ml.feature.VectorSlicer\nimport org.apache.spark.ml.Pipeline\nimport org.apache.spark.ml.feature.StandardScaler\n\n//calculate minuted from midnight, input is military time format \ndef getMinuteOfDay(depTime: String) : Int \u003d (depTime.toInt / 100).toInt * 60 + (depTime.toInt % 100)\n//define schema for raw data\ncase class Flight(Month: String, DayofMonth: String, DayOfWeek: String, DepTime: Int, CRSDepTime: Int, ArrTime: Int, CRSArrTime: Int, UniqueCarrier: String, ActualElapsedTime: Int, CRSElapsedTime: Int, AirTime: Int, ArrDelay: Double, DepDelay: Int, Origin: String, Distance: Int)\n//val flight2007 \u003d sc.textFile(\"/tmp/airflightsdelays/flights_2007.csv.bz2\")\n\nval flight2007 \u003d sc.parallelize(\n    IOUtils.toString(\n        new URL(\"file:///C:/Users/224597/Downloads/zeppelin-0.8.0-bin-all/bin/spark-warehouse/flights_2007_new.csv\"),\n        Charset.forName(\"utf8\")).split(\"\\n\"))\nval header \u003d flight2007.first\nval trainingData \u003d flight2007.filter(x \u003d\u003e x !\u003d header).map(x \u003d\u003e x.split(\",\")).filter(x \u003d\u003e x(21) \u003d\u003d \"0\").filter(x \u003d\u003e x(17) \u003d\u003d \"RDU\").filter(x \u003d\u003e x(14) !\u003d \"NA\").map(p \u003d\u003e Flight(p(1), p(2), p(3), getMinuteOfDay(p(4)), getMinuteOfDay(p(5)), getMinuteOfDay(p(6)), getMinuteOfDay(p(7)), p(8), p(11).toInt, p(12).toInt, p(13).toInt, p(14).toDouble, p(15).toInt, p(16), p(18).toInt)).toDF\ntrainingData.cache\n//val flight2008 \u003d sc.textFile(\"/tmp/airflightsdelays/flights_2008.csv.bz2\")\nval flight2008 \u003d sc.parallelize(\n    IOUtils.toString(\n        new URL(\"file:///C:/Users/224597/Downloads/zeppelin-0.8.0-bin-all/bin/spark-warehouse/flights_2008_new.csv\"),\n        Charset.forName(\"utf8\")).split(\"\\n\"))\nval testingData \u003d flight2008.filter(x \u003d\u003e x !\u003d header).map(x \u003d\u003e x.split(\",\")).filter(x \u003d\u003e x(21) \u003d\u003d \"0\").filter(x \u003d\u003e x(17) \u003d\u003d \"RDU\").filter(x \u003d\u003e x(14) !\u003d \"NA\").map(p \u003d\u003e Flight(p(1), p(2), p(3), getMinuteOfDay(p(4)), getMinuteOfDay(p(5)), getMinuteOfDay(p(6)), getMinuteOfDay(p(7)), p(8), p(11).toInt, p(12).toInt, p(13).toInt, p(14).toDouble, p(15).toInt, p(16), p(18).toInt)).toDF\ntestingData.cache\n\n//tranformor to convert string to category values\nval monthIndexer \u003d new StringIndexer().setInputCol(\"Month\").setOutputCol(\"MonthCat\").setHandleInvalid(\"keep\")\nval dayofMonthIndexer \u003d new StringIndexer().setInputCol(\"DayofMonth\").setOutputCol(\"DayofMonthCat\").setHandleInvalid(\"keep\")\nval dayOfWeekIndexer \u003d new StringIndexer().setInputCol(\"DayOfWeek\").setOutputCol(\"DayOfWeekCat\").setHandleInvalid(\"keep\")\nval uniqueCarrierIndexer \u003d new StringIndexer().setInputCol(\"UniqueCarrier\").setOutputCol(\"UniqueCarrierCat\").setHandleInvalid(\"keep\")\nval originIndexer \u003d new StringIndexer().setInputCol(\"Origin\").setOutputCol(\"OriginCat\").setHandleInvalid(\"keep\")\n \n \n//assemble raw feature\nval assembler \u003d new VectorAssembler().setInputCols(Array(\"MonthCat\", \"DayofMonthCat\", \"DayOfWeekCat\", \"UniqueCarrierCat\", \"OriginCat\", \"DepTime\", \"CRSDepTime\", \"ArrTime\", \"CRSArrTime\", \"ActualElapsedTime\", \"CRSElapsedTime\", \"AirTime\",\"DepDelay\", \"Distance\")).setOutputCol(\"rawFeatures\")\n\n//vestor slicer\nval slicer \u003d new VectorSlicer().setInputCol(\"rawFeatures\").setOutputCol(\"slicedfeatures\").setNames(Array(\"MonthCat\", \"DayofMonthCat\", \"DayOfWeekCat\", \"UniqueCarrierCat\", \"DepTime\", \"ArrTime\", \"ActualElapsedTime\", \"AirTime\", \"DepDelay\", \"Distance\"))\n//scale the features\nval scaler \u003d new StandardScaler().setInputCol(\"slicedfeatures\").setOutputCol(\"features\").setWithStd(true).setWithMean(true)\n//labels for binary classifier\nval binarizerClassifier \u003d new Binarizer().setInputCol(\"ArrDelay\").setOutputCol(\"binaryLabel\").setThreshold(15.0)\n//logistic regression\nval lr \u003d new LogisticRegression().setMaxIter(10).setRegParam(0.3).setElasticNetParam(0.8).setLabelCol(\"binaryLabel\").setFeaturesCol(\"features\")\n// Chain indexers and tree in a Pipeline\nval lrPipeline \u003d new Pipeline().setStages(Array(monthIndexer, dayofMonthIndexer, dayOfWeekIndexer, uniqueCarrierIndexer, originIndexer, assembler, slicer, scaler, binarizerClassifier, lr))\n// Train model. \nval lrModel \u003d lrPipeline.fit(trainingData)\n// Make predictions.\nval lrPredictions \u003d lrModel.transform(testingData)\n// Select example rows to display.\nlrPredictions.select(\"prediction\", \"binaryLabel\", \"features\").show(20)\n\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-02 16:29:35.953",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+----------+-----------+--------------------+\n|prediction|binaryLabel|            features|\n+----------+-----------+--------------------+\n|       0.0|        0.0|[0.0,0.9710083124...|\n|       0.0|        1.0|[0.0,0.9710083124...|\n|       0.0|        0.0|[0.0,0.9710083124...|\n|       0.0|        0.0|[0.0,0.9710083124...|\n|       0.0|        0.0|[0.0,0.9710083124...|\n|       0.0|        0.0|[0.0,0.9710083124...|\n|       0.0|        1.0|[0.0,0.9710083124...|\n|       0.0|        1.0|[0.0,0.9710083124...|\n|       0.0|        1.0|[0.0,0.9710083124...|\n|       0.0|        0.0|[0.0,0.9710083124...|\n|       1.0|        1.0|[0.0,0.9710083124...|\n|       0.0|        0.0|[0.0,0.9710083124...|\n|       0.0|        0.0|[0.0,0.9710083124...|\n|       0.0|        0.0|[0.0,0.9710083124...|\n|       0.0|        0.0|[0.0,0.9710083124...|\n|       0.0|        0.0|[0.0,0.9710083124...|\n|       0.0|        0.0|[0.0,0.9710083124...|\n|       0.0|        0.0|[0.0,0.9710083124...|\n|       0.0|        1.0|[0.0,0.9710083124...|\n|       0.0|        0.0|[0.0,0.9710083124...|\n+----------+-----------+--------------------+\nonly showing top 20 rows\n\r\n"
+          }
+        ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://10.50.205.221:4040/jobs/job?id\u003d291",
+            "http://10.50.205.221:4040/jobs/job?id\u003d292",
+            "http://10.50.205.221:4040/jobs/job?id\u003d293",
+            "http://10.50.205.221:4040/jobs/job?id\u003d294",
+            "http://10.50.205.221:4040/jobs/job?id\u003d295",
+            "http://10.50.205.221:4040/jobs/job?id\u003d296",
+            "http://10.50.205.221:4040/jobs/job?id\u003d297",
+            "http://10.50.205.221:4040/jobs/job?id\u003d298",
+            "http://10.50.205.221:4040/jobs/job?id\u003d299",
+            "http://10.50.205.221:4040/jobs/job?id\u003d300",
+            "http://10.50.205.221:4040/jobs/job?id\u003d301",
+            "http://10.50.205.221:4040/jobs/job?id\u003d302",
+            "http://10.50.205.221:4040/jobs/job?id\u003d303",
+            "http://10.50.205.221:4040/jobs/job?id\u003d304",
+            "http://10.50.205.221:4040/jobs/job?id\u003d305",
+            "http://10.50.205.221:4040/jobs/job?id\u003d306",
+            "http://10.50.205.221:4040/jobs/job?id\u003d307",
+            "http://10.50.205.221:4040/jobs/job?id\u003d308",
+            "http://10.50.205.221:4040/jobs/job?id\u003d309",
+            "http://10.50.205.221:4040/jobs/job?id\u003d310",
+            "http://10.50.205.221:4040/jobs/job?id\u003d311",
+            "http://10.50.205.221:4040/jobs/job?id\u003d312",
+            "http://10.50.205.221:4040/jobs/job?id\u003d313"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1534778565389_-226486200",
+      "id": "20180820-112245_344236826",
+      "dateCreated": "2018-08-20 11:22:45.389",
+      "dateStarted": "2018-10-02 16:18:54.959",
+      "dateFinished": "2018-10-02 16:19:13.801",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nimport org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\nimport java.text.SimpleDateFormat\nimport java.util.Calendar\nimport java.sql.Date\nimport java.sql.Timestamp\nimport org.apache.spark.mllib.linalg.Vectors\nimport org.apache.spark.ml.attribute.NominalAttribute\nimport org.apache.spark.sql.Row\nimport org.apache.spark.sql.types.{StructType,StructField,StringType}\nimport org.apache.spark.ml.feature.StringIndexer\nimport org.apache.spark.ml.feature.VectorAssembler\nimport org.apache.spark.ml.classification.LogisticRegression\nimport org.apache.spark.ml.feature.Binarizer\nimport org.apache.spark.ml.feature.VectorSlicer\nimport org.apache.spark.ml.Pipeline\nimport org.apache.spark.ml.feature.StandardScaler\n\ndef getMinuteOfDay(depTime: String) : Int \u003d (depTime.toInt / 100).toInt * 60 + (depTime.toInt % 100)\n//define schema for raw data\ncase class Flight(Month: String, DayofMonth: String, DayOfWeek: String, DepTime: Int, CRSDepTime: Int, ArrTime: Int, CRSArrTime: Int, UniqueCarrier: String, ActualElapsedTime: Int, CRSElapsedTime: Int, AirTime: Int, ArrDelay: Double, DepDelay: Int, Origin: String, Distance: Int)\n//val flight2007 \u003d sc.textFile(\"/tmp/airflightsdelays/flights_2007.csv.bz2\")\nval flight2007 \u003d sc.parallelize(\n    IOUtils.toString(\n        new URL(\"file:///C:/Users/224597/Downloads/zeppelin-0.8.0-bin-all/bin/spark-warehouse/flights_2007_new.csv\"),\n        Charset.forName(\"utf8\")).split(\"\\n\"))\n\nval trainingData \u003d flight2007.map(x \u003d\u003e x.split(\",\")).filter(x \u003d\u003e x(21) \u003d\u003d \"0\").filter(x \u003d\u003e x(17) \u003d\u003d \"ORD\").filter(x \u003d\u003e x(14) !\u003d \"NA\").map(p \u003d\u003e Flight(p(1).replaceAll(\"\\\"\", \"\"), p(2), p(3), getMinuteOfDay(p(4)), getMinuteOfDay(p(5)), getMinuteOfDay(p(6)), getMinuteOfDay(p(7)), p(8), p(11).toInt, p(12).toInt, p(13).toInt, p(14).toDouble, p(15).toInt, p(16), p(18).toInt))\ntrainingData.toDF().registerTempTable(\"trainingData\")\n\nvar trainingData_result\u003d trainingData.toDF().sqlContext.sql(s\"select * from trainingData\")\nz.show(trainingData_result)\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-02 15:39:11.571",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "Month": "string",
+                      "DayofMonth": "string",
+                      "DayOfWeek": "string",
+                      "DepTime": "string",
+                      "CRSDepTime": "string",
+                      "ArrTime": "string",
+                      "CRSArrTime": "string",
+                      "UniqueCarrier": "string",
+                      "ActualElapsedTime": "string",
+                      "CRSElapsedTime": "string",
+                      "AirTime": "string",
+                      "ArrDelay": "string",
+                      "DepDelay": "string",
+                      "Origin": "string",
+                      "Distance": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "Month\tDayofMonth\tDayOfWeek\tDepTime\tCRSDepTime\tArrTime\tCRSArrTime\tUniqueCarrier\tActualElapsedTime\tCRSElapsedTime\tAirTime\tArrDelay\tDepDelay\tOrigin\tDistance\n1\t1\t1\t1158\t1145\t1243\t1235\tWN\t85\t90\t74\t8.0\t13\tSMF\t479\n1\t1\t1\t1326\t1290\t1414\t1380\tWN\t88\t90\t73\t34.0\t36\tSMF\t479\n1\t1\t1\t750\t720\t836\t810\tWN\t86\t90\t75\t26.0\t30\tSMF\t479\n1\t1\t1\t511\t510\t597\t600\tWN\t86\t90\t74\t-3.0\t1\tSMF\t479\n1\t1\t1\t870\t860\t953\t950\tWN\t83\t90\t74\t3.0\t10\tSMF\t479\n"
+          }
+        ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://10.50.205.221:4040/jobs/job?id\u003d158"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1538506559835_1574493717",
+      "id": "20181002-145559_1269886793",
+      "dateCreated": "2018-10-02 14:55:59.835",
+      "dateStarted": "2018-10-02 15:39:11.603",
+      "dateFinished": "2018-10-02 15:39:23.306",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nimport org.apache.spark.ml.feature.Bucketizer\nimport org.apache.spark.ml.Pipeline\nimport org.apache.spark.ml.classification.DecisionTreeClassifier\nimport org.apache.spark.ml.classification.DecisionTreeClassificationModel\nimport org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator\nimport org.apache.spark.ml.feature.VectorIndexer\nimport org.apache.spark.ml.feature.PCA\n \nval indexer \u003d new VectorIndexer().setInputCol(\"rawFeatures\").setOutputCol(\"rawFeaturesIndexed\").setMaxCategories(10)\nval pca \u003d new PCA().setInputCol(\"rawFeaturesIndexed\").setOutputCol(\"features\").setK(10)\nval bucketizer \u003d new Bucketizer().setInputCol(\"ArrDelay\").setOutputCol(\"multiClassLabel\").setSplits(Array(Double.NegativeInfinity, 0.0, 15.0, Double.PositiveInfinity))\nval dt \u003d new DecisionTreeClassifier().setLabelCol(\"multiClassLabel\").setFeaturesCol(\"features\")\nval dtPipeline \u003d new Pipeline().setStages(Array(monthIndexer, dayofMonthIndexer, dayOfWeekIndexer, uniqueCarrierIndexer, originIndexer, assembler, indexer, pca, bucketizer, dt))\nval dtModel \u003d dtPipeline.fit(trainingData)\nval dtPredictions \u003d dtModel.transform(testingData)\ndtPredictions.select(\"prediction\", \"multiClassLabel\", \"features\").show(20)",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-02 16:29:40.024",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": []
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://10.50.205.221:4040/jobs/job?id\u003d314",
+            "http://10.50.205.221:4040/jobs/job?id\u003d315",
+            "http://10.50.205.221:4040/jobs/job?id\u003d316",
+            "http://10.50.205.221:4040/jobs/job?id\u003d317",
+            "http://10.50.205.221:4040/jobs/job?id\u003d318",
+            "http://10.50.205.221:4040/jobs/job?id\u003d319",
+            "http://10.50.205.221:4040/jobs/job?id\u003d320",
+            "http://10.50.205.221:4040/jobs/job?id\u003d321",
+            "http://10.50.205.221:4040/jobs/job?id\u003d322",
+            "http://10.50.205.221:4040/jobs/job?id\u003d323",
+            "http://10.50.205.221:4040/jobs/job?id\u003d324",
+            "http://10.50.205.221:4040/jobs/job?id\u003d325",
+            "http://10.50.205.221:4040/jobs/job?id\u003d326",
+            "http://10.50.205.221:4040/jobs/job?id\u003d327",
+            "http://10.50.205.221:4040/jobs/job?id\u003d328",
+            "http://10.50.205.221:4040/jobs/job?id\u003d329",
+            "http://10.50.205.221:4040/jobs/job?id\u003d330",
+            "http://10.50.205.221:4040/jobs/job?id\u003d331",
+            "http://10.50.205.221:4040/jobs/job?id\u003d332",
+            "http://10.50.205.221:4040/jobs/job?id\u003d333"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1538507034329_-916942890",
+      "id": "20181002-150354_1358591496",
+      "dateCreated": "2018-10-02 15:03:54.329",
+      "dateStarted": "2018-10-02 16:29:40.087",
+      "dateFinished": "2018-10-02 16:29:51.089",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-02 16:29:40.024",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1538512180024_-858192846",
+      "id": "20181002-162940_1942935039",
+      "dateCreated": "2018-10-02 16:29:40.024",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "SparlML",
+  "id": "2DQ4HD58Y",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "sh:shared_process": [],
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": true
+  },
+  "info": {}
+}

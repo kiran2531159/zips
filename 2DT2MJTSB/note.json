@@ -1,0 +1,570 @@
+{
+  "paragraphs": [
+    {
+      "title": "",
+      "text": "%md\n## Sample Hive notebook\n#### Sample Hive notebook using public Australian Dataset to see where tax payer money is being invested\nby [Ned Shawa](https://twitter.com/nedshawa)",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-16 12:58:56.529",
+      "config": {
+        "tableHide": false,
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "title": false,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ],
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch2\u003eSample Hive notebook\u003c/h2\u003e\n\u003ch4\u003eSample Hive notebook using public Australian Dataset to see where tax payer money is being invested\u003c/h4\u003e\n\u003cp\u003eby \u003ca href\u003d\"https://twitter.com/nedshawa\"\u003eNed Shawa\u003c/a\u003e\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537117136529_-1610622655",
+      "id": "20150522-161500_567870758",
+      "dateCreated": "2018-09-16 12:58:56.529",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Download Spending Dataset into HDFS",
+      "text": "%sh\n\n#remove existing copies of dataset from HDFS\nhadoop fs -rm  /tmp/expenses.csv\n\n#fetch the dataset\nwget https://data.gov.au/dataset/f84b9baf-c1c1-437c-8c1e-654b2829848c/resource/88399d53-d55c-466c-8f4a-6cb965d24d6d/download/healthexpenditurebyareaandsource.csv -O /tmp/expenses.csv\n\n#remove header\nsed -i \u00271d\u0027 /tmp/expenses.csv\n#remove empty fields\nsed -i \"s/,,,,,//g\" /tmp/expenses.csv\nsed -i \u0027/^\\s*$/d\u0027 /tmp/expenses.csv\n\n#put data into HDFS\nhadoop fs -put /tmp/expenses.csv /tmp\nhadoop fs -ls -h /tmp/expenses.csv\nrm /tmp/expenses.csv",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-16 12:58:56.529",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/sh",
+        "title": true,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ],
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "15/09/16 00:10:53 INFO fs.TrashPolicyDefault: Namenode trash configuration: Deletion interval \u003d 360 minutes, Emptier interval \u003d 0 minutes.\nMoved: \u0027hdfs://sandbox.hortonworks.com:8020/tmp/expenses.csv\u0027 to trash at: hdfs://sandbox.hortonworks.com:8020/user/zeppelin/.Trash/Current\n--2015-09-16 00:10:53--  https://data.gov.au/dataset/f84b9baf-c1c1-437c-8c1e-654b2829848c/resource/88399d53-d55c-466c-8f4a-6cb965d24d6d/download/healthexpenditurebyareaandsource.csv\nResolving data.gov.au... 54.252.191.23\nConnecting to data.gov.au|54.252.191.23|:443... connected.\nHTTP request sent, awaiting response... 200 OK\nLength: 469727 (459K) [text/csv]\nSaving to: “/tmp/expenses.csv”\n\n     0K .......... .......... .......... .......... .......... 10%  127K 3s\n    50K .......... .......... .......... .......... .......... 21%  130K 3s\n   100K .......... .......... .......... .......... .......... 32%  261K 2s\n   150K .......... .......... .......... .......... .......... 43%  271K 1s\n   200K .......... .......... .......... .......... .......... 54% 1.62M 1s\n   250K .......... .......... .......... .......... .......... 65%  294K 1s\n   300K .......... .......... .......... .......... .......... 76% 2.18M 0s\n   350K .......... .......... .......... .......... .......... 87%  294K 0s\n   400K .......... .......... .......... .......... .......... 98% 1.49M 0s\n   450K ........                                              100% 79.3M\u003d1.6s\n\n2015-09-16 00:10:56 (290 KB/s) - “/tmp/expenses.csv” saved [469727/469727]\n\n-rw-r--r--   1 zeppelin hdfs    456.4 K 2015-09-16 00:10 /tmp/expenses.csv\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537117136529_1094238873",
+      "id": "20150524-024812_14038061",
+      "dateCreated": "2018-09-16 12:58:56.529",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%hive\ndrop table if exists `health_table`",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-16 12:58:56.529",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/scala",
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ],
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "The query did not generate a result set!"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537117136529_1441249417",
+      "id": "20150522-161558_1909354726",
+      "dateCreated": "2018-09-16 12:58:56.529",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Create Hive table",
+      "text": "%hive\nCREATE TABLE `health_table` (\n`year` string ,\n`state` string ,\n`category` string ,\n`funding_src1` string, \n`funding_src2` string,\n`spending` int)\nROW FORMAT DELIMITED FIELDS TERMINATED BY \u0027,\u0027 STORED AS TextFile",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-16 12:58:56.529",
+      "config": {
+        "colWidth": 4.0,
+        "editorMode": "ace/mode/scala",
+        "title": true,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ],
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "The query did not generate a result set!"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537117136529_-1895623813",
+      "id": "20150522-162040_1668201074",
+      "dateCreated": "2018-09-16 12:58:56.529",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Load dataset into Hive table",
+      "text": "%hive\nload data \ninpath \u0027/tmp/expenses.csv\u0027\ninto table health_table\n\n\n\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-16 12:58:56.529",
+      "config": {
+        "colWidth": 4.0,
+        "editorMode": "ace/mode/scala",
+        "title": true,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ],
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "The query did not generate a result set!"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537117136529_-1082106527",
+      "id": "20150522-162051_1380818401",
+      "dateCreated": "2018-09-16 12:58:56.529",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Grant permissions",
+      "text": "%hive\nselect count(*) from  health_table ",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-16 12:59:06.683",
+      "config": {
+        "colWidth": 4.0,
+        "editorMode": "ace/mode/scala",
+        "title": true,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 94.0,
+              "optionOpen": false,
+              "keys": [
+                {
+                  "name": "_c0",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [],
+              "groups": [],
+              "scatter": {
+                "xAxis": {
+                  "name": "_c0",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              },
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "_c0": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        ],
+        "enabled": true,
+        "fontSize": 9.0,
+        "editorSetting": {}
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "_c0\n6778\t\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537117136529_1513531622",
+      "id": "20150522-162131_633343543",
+      "dateCreated": "2018-09-16 12:58:56.529",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Spending (In Billions) By State",
+      "text": "%hive\nselect state, sum(spending)/1000 SpendinginBillions\nfrom health_table \ngroup by state\norder by SpendinginBillions desc\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-16 12:58:56.529",
+      "config": {
+        "colWidth": 4.0,
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "title": true,
+        "results": [
+          {
+            "graph": {
+              "mode": "pieChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [
+                {
+                  "name": "state",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [
+                {
+                  "name": "spendinginbillions",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "scatter": {
+                "yAxis": {
+                  "name": "spendinginbillions",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              }
+            }
+          }
+        ],
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "state\tspendinginbillions\nNSW\t482.366\t\nVIC\t360.217\t\nQLD\t289.676\t\nWA\t149.887\t\nSA\t114.623\t\nTAS\t34.294\t\nACT\t28.26\t\nNT\t18.915\t\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537117136529_893142630",
+      "id": "20150522-162211_901354365",
+      "dateCreated": "2018-09-16 12:58:56.529",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Spending (In Billions) By Year",
+      "text": "%hive\nselect year,sum(spending)/1000 SpendinginBillions \nfrom health_table \ngroup by year \norder by SpendinginBillions\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-16 12:59:07.094",
+      "config": {
+        "colWidth": 4.0,
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "title": true,
+        "results": [
+          {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [
+                {
+                  "name": "spendinginbillions",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "scatter": {
+                "yAxis": {
+                  "name": "spendinginbillions",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              },
+              "setting": {
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        ],
+        "enabled": true,
+        "fontSize": 9.0,
+        "editorSetting": {}
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "year\tspendinginbillions\n1997-98\t65.705\t\n1998-99\t69.54\t\n1999-00\t73.084\t\n2000-01\t78.687\t\n2001-02\t82.895\t\n2002-03\t87.702\t\n2003-04\t90.617\t\n2004-05\t96.503\t\n2005-06\t99.076\t\n2006-07\t104.979\t\n2007-08\t112.106\t\n2008-09\t119.757\t\n2009-10\t124.767\t\n2010-11\t132.572\t\n2011-12\t140.248\t\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537117136529_-2094544688",
+      "id": "20150522-162208_1582578207",
+      "dateCreated": "2018-09-16 12:58:56.529",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Spending (In Billions) By Category",
+      "text": "%hive\nselect category, sum(spending)/1000 SpendinginBillions from health_table \ngroup by category \norder by SpendinginBillions desc\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-16 12:59:07.171",
+      "config": {
+        "colWidth": 4.0,
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "title": true,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 314.0,
+              "optionOpen": false,
+              "keys": [
+                {
+                  "name": "category",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [
+                {
+                  "name": "spendinginbillions",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "scatter": {
+                "yAxis": {
+                  "name": "spendinginbillions",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              },
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "category": "string",
+                      "spendinginbillions": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        ],
+        "enabled": true,
+        "fontSize": 9.0,
+        "editorSetting": {}
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "category\tspendinginbillions\nPublic hospitals\t445.845\t\nMedical services\t272.507\t\nPrivate hospitals\t121.022\t\nBenefit-paid pharmaceuticals\t104.221\t\nDental services\t90.786\t\nCommunity health\t75.765\t\nCapital expenditure\t72.698\t\nAll other medications\t70.508\t\nOther health practitioners\t51.382\t\nAdministration\t41.029\t\nResearch\t40.074\t\nAids and appliances\t37.155\t\nPatient transport services\t28.174\t\nPublic health\t27.072\t\nMedical expense tax rebate\t0.0\t\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1537117136529_459782563",
+      "id": "20150522-170955_851199732",
+      "dateCreated": "2018-09-16 12:58:56.529",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "user": "anonymous",
+      "dateUpdated": "2018-09-16 12:58:56.529",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/scala",
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1537117136529_608214889",
+      "id": "20150522-161512_786502438",
+      "dateCreated": "2018-09-16 12:58:56.529",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Demos / Hive / Australian Dataset",
+  "id": "2DT2MJTSB",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "md:shared_process": [],
+    "sh:shared_process": [],
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

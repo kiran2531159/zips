@@ -1,0 +1,145 @@
+{
+  "paragraphs": [
+    {
+      "text": "%sh\nDEL C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_master.csv\nDEL C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_XC_master.csv\nDEL C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\cliams_in_wf_not_in_claim_tbl_master.csv\nDEL C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_25dy_master.csv\nDEL C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_1753_master.csv\nDEL C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_with_no_check_master.csv\nTYPE C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_*.csv \u003e\u003e C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_master.csv\nTYPE C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_XC_*.csv \u003e\u003e C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_XC_master.csv\nTYPE C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\cliams_in_wf_not_in_claim_tbl_*.csv \u003e\u003e C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\cliams_in_wf_not_in_claim_tbl_master.csv\nTYPE C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_25dy_*.csv \u003e\u003e C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_25dy_master.csv\nTYPE C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_1753_*.csv \u003e\u003e C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_1753_master.csv\nTYPE C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_with_no_check*.csv \u003e\u003e C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_with_no_check_master.csv\n\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-02 12:30:51.643",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 88.0,
+              "optionOpen": false
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "editorMode": "ace/mode/sh"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Could Not Find C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_XC_master.csv\r\nCould Not Find C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\cliams_in_wf_not_in_claim_tbl_master.csv\r\nCould Not Find C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_25dy_master.csv\r\nCould Not Find C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_1753_master.csv\r\nCould Not Find C:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_with_no_check_master.csv\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_0927.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_0928.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_1001.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_1002.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_master.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_XC.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_XC_0927.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_XC_0928.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_XC_1001.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_XC_1002.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_XC_0927.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_XC_0928.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_XC_1001.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_XC_1002.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_not_inwf_not_inlk_XC_master.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\cliams_in_wf_not_in_claim_tbl_0927.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\cliams_in_wf_not_in_claim_tbl_0928.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\cliams_in_wf_not_in_claim_tbl_1001.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\cliams_in_wf_not_in_claim_tbl_1002.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\cliams_in_wf_not_in_claim_tbl_master.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_25dy_0927.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_25dy_0928.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_25dy_1001.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_25dy_1002.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_25dy_master.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_1753_0927.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_1753_0928.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_1753_1001.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_1753_1002.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_drag_dt_with_1753_master.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_with_no_check.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_with_no_check_0927.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_with_no_check_1001.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_with_no_check_1002.csv\r\n\r\n\r\n\r\nC:\\Users\\224597\\Documents\\CLAIMS\\DATA\\claims_with_no_check_master.csv\r\n\r\n\r\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1538496933074_-1758011572",
+      "id": "20181002-121533_54495699",
+      "dateCreated": "2018-10-02 12:15:33.074",
+      "dateStarted": "2018-10-02 12:29:52.288",
+      "dateFinished": "2018-10-02 12:29:53.407",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%MicrosoftSQL\nSELECT \n        count(1)\n    FROM [CSN-TPZ-SQL-03\\PR02A].fabncpr0.dbo.CMC_CLCL_CLAIM \n   where CLCL_RECD_DT \u003e \u002710/01/2018\u0027\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-08 15:54:29.498",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {}
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "\n283646\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1538496959520_-1065722997",
+      "id": "20181002-121559_993763975",
+      "dateCreated": "2018-10-02 12:15:59.520",
+      "dateStarted": "2018-10-08 15:54:04.570",
+      "dateFinished": "2018-10-08 15:54:19.423",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%MicrosoftSQL\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-08 15:54:04.492",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1539028444492_-408648146",
+      "id": "20181008-155404_249406830",
+      "dateCreated": "2018-10-08 15:54:04.492",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "CLAIMS_LPI_2",
+  "id": "2DRGFV5HM",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "MicrosoftSQL:shared_process": [],
+    "sh:shared_process": [],
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": true
+  },
+  "info": {}
+}

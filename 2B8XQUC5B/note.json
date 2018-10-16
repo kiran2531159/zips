@@ -1,0 +1,102 @@
+{
+  "paragraphs": [
+    {
+      "text": "case class Value(index : Int, name: String, aggr: String)\ncase class Group(index : Int, name: String)\ncase class Key(index : Int, name: String)\n\n// get graph configuration\nval graph \u003d z.getInterpreterContext.getConfig().get(\"graph\").asInstanceOf[java.util.Map[String,Object]]\n\n// set keys\ngraph.put(\"keys\", Array(Group(1, \"key\")))\n// set groups\ngraph.put(\"groups\", Array())\n\n// set values conditionally with dynamic form\nval choice \u003d z.select(\"day\", \"a\", Seq((\"a\",\"choice A\"), (\"b\", \"choice B\"))).toString\nif (choice \u003d\u003d \"a\") {\n    graph.put(\"values\", Array(Value(1, \"col1\", \"avg\")))\n} else {\n    graph.put(\"values\", Array(Value(1, \"col1\", \"avg\"), Value(2, \"col2\", \"max\")))\n}\n\nprintln(s\"\"\"%table\nkey\\tcol1\\tcol2\na\\t1\\t10\nb\\t2\\t20\"\"\")",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-05 11:39:27.511",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": [
+          {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [
+                {
+                  "index": 1.0,
+                  "name": "col1",
+                  "aggr": "avg"
+                }
+              ],
+              "groups": [],
+              "scatter": {
+                "xAxis": {
+                  "name": "key",
+                  "index": 0.0,
+                  "aggr": "sum"
+                },
+                "yAxis": {
+                  "name": "col1",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              },
+              "setting": {
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        ],
+        "fontSize": 9.0,
+        "runOnSelectionChange": true,
+        "editorSetting": {}
+      },
+      "settings": {
+        "params": {
+          "day": "a"
+        },
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": []
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TABLE",
+        "msg": "key\tcol1\tcol2\na\t1\t10\nb\t2\t20\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1453234088330_679826294",
+      "id": "20160119-120808_1723806879",
+      "dateCreated": "2016-01-19 12:08:08.000",
+      "dateStarted": "2018-10-05 11:39:27.656",
+      "dateFinished": "2018-10-05 11:39:59.239",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1453234224911_503812157",
+      "id": "20160119-121024_1094042234",
+      "dateCreated": "2016-01-19 12:10:24.000",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Programmatically configure graph",
+  "id": "2B8XQUC5B",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": true
+  },
+  "info": {}
+}

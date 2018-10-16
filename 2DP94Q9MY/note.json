@@ -1,0 +1,260 @@
+{
+  "paragraphs": [
+    {
+      "text": "%spark\nsc.version",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-11 14:26:36.460",
+      "config": {
+        "colWidth": 10.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "res11: String \u003d 2.2.0\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1536674849489_-1629804569",
+      "id": "20180911-100729_843485730",
+      "dateCreated": "2018-09-11 10:07:29.489",
+      "dateStarted": "2018-09-11 14:26:36.580",
+      "dateFinished": "2018-09-11 14:26:37.880",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "\n//%spark\nimport java.io.File\ndef getListOfFiles(dir: String):List[File] \u003d {\n    val d \u003d new File(dir)\n    if (d.exists \u0026\u0026 d.isDirectory) {\n        d.listFiles.filter(_.isFile).toList\n    } else {\n        List[File]()\n    }\n}\n\nval files \u003d getListOfFiles(\"//css-tpz2-nas-07.tpz.tzghosting.net/tpz501/PROD/FACETS/fabncpr0/History\")\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-11 10:07:26.874",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1535128392796_935234737",
+      "id": "20180824-123312_1290614521",
+      "dateCreated": "2018-08-24 12:33:12.796",
+      "dateStarted": "2018-09-07 12:36:05.935",
+      "dateFinished": "2018-09-07 12:33:51.973",
+      "status": "ABORT",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nimport java.io.File\nimport org.apache.spark._\nimport org.apache.spark.sql._\ndef getListOfFiles(dir: String):List[File] \u003d {\n    val d \u003d new File(dir)\n    if (d.exists \u0026\u0026 d.isDirectory) {\n        d.listFiles.filter(_.isFile).toList\n    } else {\n        List[File]()types\n    }\n}\nval files \u003d getListOfFiles(\"//css-tpz2-nas-07.tpz.tzghosting.net/tpz501/PROD/FACETS/fabncpr0/History/CLUDLogReport_08312016042633\")\n\nval list \u003d sc.parallelize(files)\nval rdd\u003dspark.createDataFrame(list).toDF(\"File_Name\")\nval df \u003d sqlContext.read\n//    .format(\"com.databricks.spark.csv\")\n//    .option(\"header\", \"true\") // Use first line of all files as header\n//    .option(\"inferSchema\", \"true\") // Automatically infer data \n //   .load(\"my_data.txt\")\n//z.show(files.foreach(println))\n//val df \u003d Seq(\n// list\n//).toDF(\"File_Name\")\n\n//z.show(df)",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-10 17:48:01.391",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "File_Name": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1536338001222_530793996",
+      "id": "20180907-123321_1899906616",
+      "dateCreated": "2018-09-07 12:33:21.222",
+      "dateStarted": "2018-09-10 17:48:01.590",
+      "dateFinished": "2018-09-10 17:48:38.664",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nimport org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\n//val bankText \u003d sc.textFile(\"file:///C:/Users/224597/Downloads/bank/bank-full.csv\")\nval bankText \u003d sc.parallelize(\n    IOUtils.toString(\n        new URL(\"file:///C:/Users/224597/Downloads/bank/bank-full.csv\"),\n        Charset.forName(\"utf8\")).split(\"\\n\"))\ncase class Bank(age:Integer, job:String, marital : String, education : String, balance : Integer)\nval bank \u003d bankText.map(s\u003d\u003es.split(\";\")).filter(s\u003d\u003es(0)!\u003d\"\\\"age\\\"\").map(\n    s\u003d\u003eBank(s(0).toInt, \n            s(1).replaceAll(\"\\\"\", \"\"),\n            s(2).replaceAll(\"\\\"\", \"\"),\n            s(3).replaceAll(\"\\\"\", \"\"),\n            s(5).replaceAll(\"\\\"\", \"\").toInt\n        )\n)\nbank.toDF().registerTempTable(\"bank\")\nval sqlDF \u003d spark.sql(\"SELECT * FROM bank\")\nz.show(sqlDF.show())",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-11 14:53:09.256",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+---+------------+--------+---------+-------+\n|age|         job| marital|education|balance|\n+---+------------+--------+---------+-------+\n| 58|  management| married| tertiary|   2143|\n| 44|  technician|  single|secondary|     29|\n| 33|entrepreneur| married|secondary|      2|\n| 47| blue-collar| married|  unknown|   1506|\n| 33|     unknown|  single|  unknown|      1|\n| 35|  management| married| tertiary|    231|\n| 28|  management|  single| tertiary|    447|\n| 42|entrepreneur|divorced| tertiary|      2|\n| 58|     retired| married|  primary|    121|\n| 43|  technician|  single|secondary|    593|\n| 41|      admin.|divorced|secondary|    270|\n| 29|      admin.|  single|secondary|    390|\n| 53|  technician| married|secondary|      6|\n| 58|  technician| married|  unknown|     71|\n| 57|    services| married|secondary|    162|\n| 51|     retired| married|  primary|    229|\n| 45|      admin.|  single|  unknown|     13|\n| 57| blue-collar| married|  primary|     52|\n| 60|     retired| married|  primary|     60|\n| 33|    services| married|secondary|      0|\n+---+------------+--------+---------+-------+\nonly showing top 20 rows\n\r\nZeppelinContext doesn\u0027t support to show type: scala.runtime.BoxedUnit\n()"
+          }
+        ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://10.50.206.71:4041/jobs/job?id\u003d1"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1536338689704_-1967662122",
+      "id": "20180907-124449_1250240292",
+      "dateCreated": "2018-09-07 12:44:49.704",
+      "dateStarted": "2018-09-11 14:52:54.479",
+      "dateFinished": "2018-09-11 14:53:00.973",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sql\nselect * from bank \n",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-10 13:19:47.029",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "editorHide": false,
+        "tableHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "java.lang.NoSuchMethodError: org.apache.hadoop.fs.FileSystem$Statistics.getThreadStatistics()Lorg/apache/hadoop/fs/FileSystem$Statistics$StatisticsData;\r\n\tat org.apache.spark.deploy.SparkHadoopUtil$$anonfun$1$$anonfun$apply$mcJ$sp$1.apply(SparkHadoopUtil.scala:149)\r\n\tat org.apache.spark.deploy.SparkHadoopUtil$$anonfun$1$$anonfun$apply$mcJ$sp$1.apply(SparkHadoopUtil.scala:149)\r\n\tat scala.collection.TraversableLike$$anonfun$map$1.apply(TraversableLike.scala:234)\r\n\tat scala.collection.TraversableLike$$anonfun$map$1.apply(TraversableLike.scala:234)\r\n\tat scala.collection.Iterator$class.foreach(Iterator.scala:893)\r\n\tat scala.collection.AbstractIterator.foreach(Iterator.scala:1336)\r\n\tat scala.collection.IterableLike$class.foreach(IterableLike.scala:72)\r\n\tat scala.collection.AbstractIterable.foreach(Iterable.scala:54)\r\n\tat scala.collection.TraversableLike$class.map(TraversableLike.scala:234)\r\n\tat scala.collection.AbstractTraversable.map(Traversable.scala:104)\r\n\tat org.apache.spark.deploy.SparkHadoopUtil$$anonfun$1.apply$mcJ$sp(SparkHadoopUtil.scala:149)\r\n\tat org.apache.spark.deploy.SparkHadoopUtil.getFSBytesReadOnThreadCallback(SparkHadoopUtil.scala:150)\r\n\tat org.apache.spark.rdd.HadoopRDD$$anon$1.\u003cinit\u003e(HadoopRDD.scala:224)\r\n\tat org.apache.spark.rdd.HadoopRDD.compute(HadoopRDD.scala:203)\r\n\tat org.apache.spark.rdd.HadoopRDD.compute(HadoopRDD.scala:94)\r\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:323)\r\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:287)\r\n\tat org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)\r\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:323)\r\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:287)\r\n\tat org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)\r\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:323)\r\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:287)\r\n\tat org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)\r\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:323)\r\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:287)\r\n\tat org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)\r\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:323)\r\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:287)\r\n\tat org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)\r\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:323)\r\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:287)\r\n\tat org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)\r\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:323)\r\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:287)\r\n\tat org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)\r\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:323)\r\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:287)\r\n\tat org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:87)\r\n\tat org.apache.spark.scheduler.Task.run(Task.scala:108)\r\n\tat org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:335)\r\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\r\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\r\n\tat java.lang.Thread.run(Thread.java:748)\r\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1536587685811_971718266",
+      "id": "20180910-095445_710462113",
+      "dateCreated": "2018-09-10 09:54:45.811",
+      "dateStarted": "2018-09-10 13:19:47.145",
+      "dateFinished": "2018-09-10 13:19:49.706",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sql\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-10 10:02:13.971",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1536588133961_1939531358",
+      "id": "20180910-100213_1618131862",
+      "dateCreated": "2018-09-10 10:02:13.961",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "sparkTest",
+  "id": "2DP94Q9MY",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "md:shared_process": [],
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

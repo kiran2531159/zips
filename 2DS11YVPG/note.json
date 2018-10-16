@@ -1,0 +1,109 @@
+{
+  "paragraphs": [
+    {
+      "text": "import org.apache.spark.sql._\nimport org.apache.spark.sql.functions._\nval sqlContext \u003d new SQLContext(sc)\nval document \u003d \"file:///C:/Users/224597/Documents/CLAIMS/a/Solution.xlsx\"\n\nval dataDF \u003d sqlContext.read.format(\"com.crealytics.spark.excel\").option(\"sheetName\",\"Sheet1\").option(\"useHeader\", \"true\").option(\"treatEmptyValuesAsNulls\", \"false\").option(\"inferSchema\",\"false\").option(\"location\", document).option(\"addColorColumns\", \"false\").load(document)\n\ndataDF.registerTempTable(\"claims\")\nz.show(dataDF)",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-12 16:10:50.440",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "import org.apache.spark.sql._\nimport org.apache.spark.sql.functions._\nwarning: there was one deprecation warning; re-run with -deprecation for details\nsqlContext: org.apache.spark.sql.SQLContext \u003d org.apache.spark.sql.SQLContext@28a3031\ndocument: String \u003d file:///C:/Users/224597/Documents/CLAIMS/a/Solution.xlsx\ndataDF: org.apache.spark.sql.DataFrame \u003d [COUNT_OF_CLAIMS: string, DATE: string ... 5 more fields]\nwarning: there was one deprecation warning; re-run with -deprecation for details\njava.lang.RuntimeException: java.lang.reflect.InvocationTargetException\r\n  at org.apache.zeppelin.spark.SparkZeppelinContext.showData(SparkZeppelinContext.java:112)\r\n  at org.apache.zeppelin.interpreter.BaseZeppelinContext.show(BaseZeppelinContext.java:238)\r\n  at org.apache.zeppelin.interpreter.BaseZeppelinContext.show(BaseZeppelinContext.java:224)\r\n  ... 56 elided\r\nCaused by: java.lang.reflect.InvocationTargetException: java.lang.ExceptionInInitializerError: com.fasterxml.jackson.databind.JsonMappingException: Incompatible Jackson version: 2.8.8\r\n  at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\r\n  at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)\r\n  at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\r\n  at java.lang.reflect.Method.invoke(Method.java:498)\r\n  at org.apache.zeppelin.spark.SparkZeppelinContext.showData(SparkZeppelinContext.java:108)\r\n  ... 58 more\r\nCaused by: java.lang.ExceptionInInitializerError: com.fasterxml.jackson.databind.JsonMappingException: Incompatible Jackson version: 2.8.8\r\n  at org.apache.spark.SparkContext.withScope(SparkContext.scala:701)\r\n  at org.apache.spark.SparkContext.parallelize(SparkContext.scala:718)\r\n  at com.crealytics.spark.excel.ExcelRelation.buildScan(ExcelRelation.scala:148)\r\n  at org.apache.spark.sql.execution.datasources.DataSourceStrategy$$anonfun$12.apply(DataSourceStrategy.scala:284)\r\n  at org.apache.spark.sql.execution.datasources.DataSourceStrategy$$anonfun$12.apply(DataSourceStrategy.scala:284)\r\n  at org.apache.spark.sql.execution.datasources.DataSourceStrategy$$anonfun$pruneFilterProject$1.apply(DataSourceStrategy.scala:321)\r\n  at org.apache.spark.sql.execution.datasources.DataSourceStrategy$$anonfun$pruneFilterProject$1.apply(DataSourceStrategy.scala:320)\r\n  at org.apache.spark.sql.execution.datasources.DataSourceStrategy.pruneFilterProjectRaw(DataSourceStrategy.scala:401)\r\n  at org.apache.spark.sql.execution.datasources.DataSourceStrategy.pruneFilterProject(DataSourceStrategy.scala:316)\r\n  at org.apache.spark.sql.execution.datasources.DataSourceStrategy.apply(DataSourceStrategy.scala:280)\r\n  at org.apache.spark.sql.catalyst.planning.QueryPlanner$$anonfun$1.apply(QueryPlanner.scala:62)\r\n  at org.apache.spark.sql.catalyst.planning.QueryPlanner$$anonfun$1.apply(QueryPlanner.scala:62)\r\n  at scala.collection.Iterator$$anon$12.nextCur(Iterator.scala:435)\r\n  at scala.collection.Iterator$$anon$12.hasNext(Iterator.scala:441)\r\n  at scala.collection.Iterator$$anon$12.hasNext(Iterator.scala:440)\r\n  at org.apache.spark.sql.catalyst.planning.QueryPlanner.plan(QueryPlanner.scala:92)\r\n  at org.apache.spark.sql.catalyst.planning.QueryPlanner$$anonfun$2$$anonfun$apply$2.apply(QueryPlanner.scala:77)\r\n  at org.apache.spark.sql.catalyst.planning.QueryPlanner$$anonfun$2$$anonfun$apply$2.apply(QueryPlanner.scala:74)\r\n  at scala.collection.TraversableOnce$$anonfun$foldLeft$1.apply(TraversableOnce.scala:157)\r\n  at scala.collection.TraversableOnce$$anonfun$foldLeft$1.apply(TraversableOnce.scala:157)\r\n  at scala.collection.Iterator$class.foreach(Iterator.scala:891)\r\n  at scala.collection.AbstractIterator.foreach(Iterator.scala:1334)\r\n  at scala.collection.TraversableOnce$class.foldLeft(TraversableOnce.scala:157)\r\n  at scala.collection.AbstractIterator.foldLeft(Iterator.scala:1334)\r\n  at org.apache.spark.sql.catalyst.planning.QueryPlanner$$anonfun$2.apply(QueryPlanner.scala:74)\r\n  at org.apache.spark.sql.catalyst.planning.QueryPlanner$$anonfun$2.apply(QueryPlanner.scala:66)\r\n  at scala.collection.Iterator$$anon$12.nextCur(Iterator.scala:435)\r\n  at scala.collection.Iterator$$anon$12.hasNext(Iterator.scala:441)\r\n  at org.apache.spark.sql.catalyst.planning.QueryPlanner.plan(QueryPlanner.scala:92)\r\n  at org.apache.spark.sql.execution.QueryExecution.sparkPlan$lzycompute(QueryExecution.scala:84)\r\n  at org.apache.spark.sql.execution.QueryExecution.sparkPlan(QueryExecution.scala:80)\r\n  at org.apache.spark.sql.execution.QueryExecution.executedPlan$lzycompute(QueryExecution.scala:89)\r\n  at org.apache.spark.sql.execution.QueryExecution.executedPlan(QueryExecution.scala:89)\r\n  at org.apache.spark.sql.Dataset.withAction(Dataset.scala:2832)\r\n  at org.apache.spark.sql.Dataset.head(Dataset.scala:2153)\r\n  at org.apache.spark.sql.Dataset.take(Dataset.scala:2366)\r\n  ... 63 more\r\nCaused by: com.fasterxml.jackson.databind.JsonMappingException: Incompatible Jackson version: 2.8.8\r\n  at com.fasterxml.jackson.module.scala.JacksonModule$class.setupModule(JacksonModule.scala:64)\r\n  at com.fasterxml.jackson.module.scala.DefaultScalaModule.setupModule(DefaultScalaModule.scala:19)\r\n  at com.fasterxml.jackson.databind.ObjectMapper.registerModule(ObjectMapper.java:745)\r\n  at org.apache.spark.rdd.RDDOperationScope$.\u003cinit\u003e(RDDOperationScope.scala:82)\r\n  at org.apache.spark.rdd.RDDOperationScope$.\u003cclinit\u003e(RDDOperationScope.scala)\r\n  ... 99 more\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1536756488493_490854721",
+      "id": "20180912-084808_1773120477",
+      "dateCreated": "2018-09-12 08:48:08.493",
+      "dateStarted": "2018-09-12 16:10:50.632",
+      "dateFinished": "2018-09-12 16:11:24.458",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sql select * from claims",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-12 15:34:05.133",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "java.lang.NoClassDefFoundError: Could not initialize class org.apache.spark.rdd.RDDOperationScope$\r\n\tat org.apache.spark.SparkContext.withScope(SparkContext.scala:701)\r\n\tat org.apache.spark.SparkContext.parallelize(SparkContext.scala:718)\r\n\tat com.crealytics.spark.excel.ExcelRelation.buildScan(ExcelRelation.scala:148)\r\n\tat org.apache.spark.sql.execution.datasources.DataSourceStrategy$$anonfun$12.apply(DataSourceStrategy.scala:284)\r\n\tat org.apache.spark.sql.execution.datasources.DataSourceStrategy$$anonfun$12.apply(DataSourceStrategy.scala:284)\r\n\tat org.apache.spark.sql.execution.datasources.DataSourceStrategy$$anonfun$pruneFilterProject$1.apply(DataSourceStrategy.scala:321)\r\n\tat org.apache.spark.sql.execution.datasources.DataSourceStrategy$$anonfun$pruneFilterProject$1.apply(DataSourceStrategy.scala:320)\r\n\tat org.apache.spark.sql.execution.datasources.DataSourceStrategy.pruneFilterProjectRaw(DataSourceStrategy.scala:401)\r\n\tat org.apache.spark.sql.execution.datasources.DataSourceStrategy.pruneFilterProject(DataSourceStrategy.scala:316)\r\n\tat org.apache.spark.sql.execution.datasources.DataSourceStrategy.apply(DataSourceStrategy.scala:280)\r\n\tat org.apache.spark.sql.catalyst.planning.QueryPlanner$$anonfun$1.apply(QueryPlanner.scala:62)\r\n\tat org.apache.spark.sql.catalyst.planning.QueryPlanner$$anonfun$1.apply(QueryPlanner.scala:62)\r\n\tat scala.collection.Iterator$$anon$12.nextCur(Iterator.scala:435)\r\n\tat scala.collection.Iterator$$anon$12.hasNext(Iterator.scala:441)\r\n\tat scala.collection.Iterator$$anon$12.hasNext(Iterator.scala:440)\r\n\tat org.apache.spark.sql.catalyst.planning.QueryPlanner.plan(QueryPlanner.scala:92)\r\n\tat org.apache.spark.sql.catalyst.planning.QueryPlanner$$anonfun$2$$anonfun$apply$2.apply(QueryPlanner.scala:77)\r\n\tat org.apache.spark.sql.catalyst.planning.QueryPlanner$$anonfun$2$$anonfun$apply$2.apply(QueryPlanner.scala:74)\r\n\tat scala.collection.TraversableOnce$$anonfun$foldLeft$1.apply(TraversableOnce.scala:157)\r\n\tat scala.collection.TraversableOnce$$anonfun$foldLeft$1.apply(TraversableOnce.scala:157)\r\n\tat scala.collection.Iterator$class.foreach(Iterator.scala:891)\r\n\tat scala.collection.AbstractIterator.foreach(Iterator.scala:1334)\r\n\tat scala.collection.TraversableOnce$class.foldLeft(TraversableOnce.scala:157)\r\n\tat scala.collection.AbstractIterator.foldLeft(Iterator.scala:1334)\r\n\tat org.apache.spark.sql.catalyst.planning.QueryPlanner$$anonfun$2.apply(QueryPlanner.scala:74)\r\n\tat org.apache.spark.sql.catalyst.planning.QueryPlanner$$anonfun$2.apply(QueryPlanner.scala:66)\r\n\tat scala.collection.Iterator$$anon$12.nextCur(Iterator.scala:435)\r\n\tat scala.collection.Iterator$$anon$12.hasNext(Iterator.scala:441)\r\n\tat org.apache.spark.sql.catalyst.planning.QueryPlanner.plan(QueryPlanner.scala:92)\r\n\tat org.apache.spark.sql.execution.QueryExecution.sparkPlan$lzycompute(QueryExecution.scala:84)\r\n\tat org.apache.spark.sql.execution.QueryExecution.sparkPlan(QueryExecution.scala:80)\r\n\tat org.apache.spark.sql.execution.QueryExecution.executedPlan$lzycompute(QueryExecution.scala:89)\r\n\tat org.apache.spark.sql.execution.QueryExecution.executedPlan(QueryExecution.scala:89)\r\n\tat org.apache.spark.sql.Dataset.withAction(Dataset.scala:2832)\r\n\tat org.apache.spark.sql.Dataset.head(Dataset.scala:2153)\r\n\tat org.apache.spark.sql.Dataset.take(Dataset.scala:2366)\r\n\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\r\n\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)\r\n\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\r\n\tat java.lang.reflect.Method.invoke(Method.java:498)\r\n\tat org.apache.zeppelin.spark.SparkZeppelinContext.showData(SparkZeppelinContext.java:108)\r\n\tat org.apache.zeppelin.spark.SparkSqlInterpreter.interpret(SparkSqlInterpreter.java:135)\r\n\tat org.apache.zeppelin.interpreter.LazyOpenInterpreter.interpret(LazyOpenInterpreter.java:103)\r\n\tat org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer$InterpretJob.jobRun(RemoteInterpreterServer.java:633)\r\n\tat org.apache.zeppelin.scheduler.Job.run(Job.java:188)\r\n\tat org.apache.zeppelin.scheduler.ParallelScheduler$JobRunner.run(ParallelScheduler.java:162)\r\n\tat java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)\r\n\tat java.util.concurrent.FutureTask.run(FutureTask.java:266)\r\n\tat java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$201(ScheduledThreadPoolExecutor.java:180)\r\n\tat java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)\r\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\r\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\r\n\tat java.lang.Thread.run(Thread.java:748)\r\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1536758058400_1586618573",
+      "id": "20180912-091418_1039223579",
+      "dateCreated": "2018-09-12 09:14:18.400",
+      "dateStarted": "2018-09-12 15:34:05.337",
+      "dateFinished": "2018-09-12 15:34:05.676",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sql\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-12 12:54:17.486",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1536771257476_1822236073",
+      "id": "20180912-125417_1126287549",
+      "dateCreated": "2018-09-12 12:54:17.476",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Spark_Excel",
+  "id": "2DS11YVPG",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

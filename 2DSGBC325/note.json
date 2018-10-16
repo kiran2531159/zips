@@ -1,0 +1,72 @@
+{
+  "paragraphs": [
+    {
+      "text": "%python\nprint (z.input(\"f1\",\"defaultValue\"))",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-06 10:35:39.425",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "failed to start python"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1536244526353_635484242",
+      "id": "20180906-103526_2138125552",
+      "dateCreated": "2018-09-06 10:35:26.353",
+      "dateStarted": "2018-09-06 10:35:39.483",
+      "dateFinished": "2018-09-06 10:35:44.561",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%python\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-06 10:35:39.428",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1536244539425_-1427788052",
+      "id": "20180906-103539_277520409",
+      "dateCreated": "2018-09-06 10:35:39.425",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "~Trash/phython_note",
+  "id": "2DSGBC325",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "md:shared_process": [],
+    "python:shared_process": [],
+    "mysql_aso:shared_process": [],
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

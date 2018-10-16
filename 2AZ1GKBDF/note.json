@@ -1,0 +1,91 @@
+{
+  "paragraphs": [
+    {
+      "text": "{\n    import org.apache.spark.sql.{SQLContext, DataFrame}\n    val clicksS3Bucket \u003d \"s3n://yadi/yado\"\n    val impressionsS3Bucket \u003d \"s3n://yadi/yado\"\n    val clicksDF \u003d sc.parallelize(1 to 10)\n    val data \u003d clicksDF.count\n    print(s\"Count for pixels data is $data\")\n}\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-08 13:45:26.593",
+      "config": {
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ],
+        "fontSize": 9.0,
+        "enabled": true,
+        "editorSetting": {}
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Count for pixels data is 10"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "Count for pixels data is 10"
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://10.50.201.92:4040/jobs/job?id\u003d0"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1440010897017_-899231460",
+      "id": "20150819-120137_1668285267",
+      "dateCreated": "2015-08-19 12:01:37.000",
+      "dateStarted": "2018-10-08 13:45:26.749",
+      "dateFinished": "2018-10-08 13:45:51.630",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1440011142548_-582245983",
+      "id": "20150819-120542_1650275523",
+      "dateCreated": "2015-08-19 12:05:42.000",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Hide unnecessary output in scala",
+  "id": "2AZ1GKBDF",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "spark:shared_process": []
+  },
+  "config": {
+    "looknfeel": "default",
+    "isZeppelinNotebookCronEnable": true
+  },
+  "info": {}
+}

@@ -1,0 +1,427 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n\nGroup claims payment summary report \n\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-06 11:14:25.574",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eGroup claims payment summary report\u003c/p\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1534358785974_-1625444696",
+      "id": "20180815-144625_14219269",
+      "dateCreated": "2018-08-15 14:46:25.974",
+      "dateStarted": "2018-09-06 11:14:25.577",
+      "dateFinished": "2018-09-06 11:14:29.641",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nimport org.apache.spark.sql._\nval fac_driver \u003dspark.conf.get(\"spark.sql.driver\")\nvar group_id\u003dz.input(\"Group ID\", \"14149009\")\nvar Start_Date\u003dz.input(\"Claims start date\", \"01/01/2016\")\nvar End_Date\u003dz.input(\"Claims end date\", \"01/01/2017\")\n\n\nval fac_clcl_tables  \u003d \"\"\"(select CLCL.CLCL_TOT_PAYABLE as TOTAL_PAYABLE,CLCL.CLCL_TOT_CHG AS TOTAL_CHG, CLCL.CLCL_INPUT_DT AS CLAIM_INPUT_DT ,GRGR.GRGR_ID AS GROUP_ID , DATEPART(month,CLCL.CLCL_INPUT_DT) as CLAIM_MONTH ,DATEPART(year,CLCL.CLCL_INPUT_DT) as CLAIM_YEAR from fabncpr0..CMC_CLCL_CLAIM  CLCL , fabncpr0..CMC_GRGR_GROUP GRGR WHERE CLCL.CLCL_CUR_STS IN (01,02) AND CLCL.CSPD_CAT IN (\u0027M\u0027) AND CLCL.GRGR_CK \u003dGRGR.GRGR_CK ) b \"\"\" \n\nval pmhs_clcl_tables  \u003d \"\"\"( select  PMHS.Total_Payable as TOTAL_PAYABLE,PMHS.Total_Charge AS TOTAL_CHG, PMHS.CLCL_INPUT_DT AS CLAIM_INPUT_DT, GRGR.GRGR_ID AS GROUP_ID ,DATEPART(month,PMHS.CLCL_INPUT_DT) as CLAIM_MONTH ,DATEPART(year,PMHS.CLCL_INPUT_DT) as CLAIM_YEAR from fabncdv2custom.dbo.FACETS_PMHS_TEST PMHS , fabncpr0..CMC_GRGR_GROUP GRGR WHERE GRGR.GRGR_CK \u003d PMHS.GRGR_CK  ) c \"\"\" \n\nval fac_clcl_jdbcDF \u003d sqlContext.read.format(\"jdbc\").option(\"driver\",spark.conf.get(\"spark.sql.driver\")).option(\"url\",spark.conf.get(\"spark.jdbc\")).option(\"databaseName\", spark.conf.get(\"spark.db\")).option(\"user\", spark.conf.get(\"spark.user\")).option(\"password\",spark.conf.get(\"spark.pass\")).option(\"dbtable\", fac_clcl_tables).load()\nfac_clcl_jdbcDF.createOrReplaceTempView(\"facets_claim_data\")\nval pmhs_clcl_jdbcDF \u003d sqlContext.read.format(\"jdbc\").option(\"driver\",spark.conf.get(\"spark.sql.driver\")).option(\"url\",spark.conf.get(\"spark.jdbc\")).option(\"databaseName\", spark.conf.get(\"spark.db\")).option(\"user\", spark.conf.get(\"spark.user\")).option(\"password\",spark.conf.get(\"spark.pass\")).option(\"dbtable\", pmhs_clcl_tables).load()\npmhs_clcl_jdbcDF.createOrReplaceTempView(\"pmhs_claim_data\")\nvar fac_result\u003d fac_clcl_jdbcDF.sqlContext.sql(s\"Select TOTAL_CHG , TOTAL_PAYABLE, CLAIM_INPUT_DT,CLAIM_MONTH,CLAIM_YEAR ,GROUP_ID,\u0027FACETS\u0027 AS SYSTEM from facets_claim_data where GROUP_ID in ($group_id) and CLAIM_INPUT_DT \u003e\u003d $Start_Date  and CLAIM_INPUT_DT \u003c\u003d $End_Date  \")\nvar pmhs_result\u003d pmhs_clcl_jdbcDF.sqlContext.sql(s\"Select TOTAL_CHG  , TOTAL_PAYABLE , CLAIM_INPUT_DT ,CLAIM_MONTH,CLAIM_YEAR,GROUP_ID,\u0027PMHS\u0027 AS SYSTEM from pmhs_claim_data  where GROUP_ID in ($group_id) and CLAIM_INPUT_DT \u003e\u003d $Start_Date  and CLAIM_INPUT_DT \u003c\u003d $End_Date \")\n//var fac_result \u003dfac_grp_jdbcDF.sqlContext.sql(s\"Select sum(PMHS_TOTAL_PAYABLE) as SUM_PMHS_TOTAL_PAYABLE , sum(FACETS_TOTAL_CHG) AS SUM_FACETS_TOTAL_CHG , sum(FACETS_TOTAL_PAYABLE) AS //SUM_FACETS_TOTAL_PAYABLE,sum(PMHS_TOTAL_CHARGES) as SUM_PMHS_TOTAL_CHARGES , FACETS_CLAIM_INPUT_DT ,FACETS_GROUP_ID ,   PMHS_CLAIM_INPUT_DT ,PMHS_GROUP_ID from facets_claim_data //fac ,pmhs_claim_data pmhs where FACETS_GROUP_ID in ($group_id) and PMHS_GROUP_ID in ($group_id)  GROUP BY FACETS_CLAIM_INPUT_DT ,PMHS_CLAIM_INPUT_DT ,FACETS_GROUP_ID , //PMHS_GROUP_ID  \")\n\nz.show(fac_result.unionAll(pmhs_result))\n//z.show(fac_result.show())",
+      "user": "anonymous",
+      "dateUpdated": "2018-09-06 11:14:31.123",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "stackedAreaChart",
+              "height": 271.95,
+              "optionOpen": true,
+              "setting": {
+                "stackedAreaChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default",
+                  "style": "stack"
+                },
+                "lineChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default",
+                  "stacked": false
+                },
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "TOTAL_CHG": "string",
+                      "TOTAL_PAYABLE": "string",
+                      "CLAIM_INPUT_DT": "string",
+                      "CLAIM_MONTH": "string",
+                      "CLAIM_YEAR": "string",
+                      "GROUP_ID": "string",
+                      "SYSTEM": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "CLAIM_YEAR",
+                  "index": 4.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [
+                {
+                  "name": "GROUP_ID",
+                  "index": 5.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [
+                {
+                  "name": "TOTAL_CHG",
+                  "index": 0.0,
+                  "aggr": "sum"
+                },
+                {
+                  "name": "TOTAL_PAYABLE",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          },
+          "1": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {
+          "Goup ID": "\u002714149009\u0027",
+          "Group ID": "\u002714149106\u0027,\u002714149109\u0027,\u002714149110\u0027",
+          "Claims start date": "\u00272000-01-01\u0027",
+          "Claims end date": "\u00272019-01-01\u0027"
+        },
+        "forms": {
+          "Group ID": {
+            "type": "TextBox",
+            "name": "Group ID",
+            "displayName": "Group ID",
+            "defaultValue": "14149009",
+            "hidden": false
+          },
+          "Claims start date": {
+            "type": "TextBox",
+            "name": "Claims start date",
+            "displayName": "Claims start date",
+            "defaultValue": "01/01/2016",
+            "hidden": false
+          },
+          "Claims end date": {
+            "type": "TextBox",
+            "name": "Claims end date",
+            "displayName": "Claims end date",
+            "defaultValue": "01/01/2017",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1534260653718_276179140",
+      "id": "20180814-113053_1056986660",
+      "dateCreated": "2018-08-14 11:30:53.718",
+      "dateStarted": "2018-09-06 11:14:31.211",
+      "dateFinished": "2018-09-06 11:15:12.629",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nimport org.apache.spark.sql._\nvar group_id\u003dz.input(\"Group ID\", \"14149009\")\nvar Start_Date\u003dz.input(\"Claims start date\", \"01/01/2016\")\nvar End_Date\u003dz.input(\"Claims end date\", \"01/01/2017\")\nval fac_clcl_tables  \u003d \"\"\"(select CLCL.CLCL_TOT_PAYABLE as TOTAL_PAYABLE,CLCL.CLCL_TOT_CHG AS TOTAL_CHG, CLCL.CLCL_INPUT_DT AS CLAIM_INPUT_DT ,GRGR.GRGR_ID AS GROUP_ID , DATEPART(month,CLCL.CLCL_INPUT_DT) as CLAIM_MONTH ,DATEPART(year,CLCL.CLCL_INPUT_DT) as CLAIM_YEAR from fabncpr0..CMC_CLCL_CLAIM  CLCL , fabncpr0..CMC_GRGR_GROUP GRGR WHERE CLCL.CLCL_CUR_STS IN (01,02) AND CLCL.CSPD_CAT IN (\u0027M\u0027) AND CLCL.GRGR_CK \u003dGRGR.GRGR_CK ) b \"\"\" \n\nval pmhs_clcl_tables  \u003d \"\"\"( select  PMHS.Total_Payable as TOTAL_PAYABLE,PMHS.Total_Charge AS TOTAL_CHG, PMHS.CLCL_INPUT_DT AS CLAIM_INPUT_DT, GRGR.GRGR_ID AS GROUP_ID ,DATEPART(month,PMHS.CLCL_INPUT_DT) as CLAIM_MONTH ,DATEPART(year,PMHS.CLCL_INPUT_DT) as CLAIM_YEAR from fabncdv2custom.dbo.FACETS_PMHS_TEST PMHS , fabncpr0..CMC_GRGR_GROUP GRGR WHERE GRGR.GRGR_CK \u003d PMHS.GRGR_CK  ) c \"\"\" \n\nval fac_clcl_jdbcDF \u003d sqlContext.read.format(\"jdbc\").option(\"driver\",spark.conf.get(\"spark.sql.driver\")).option(\"url\",spark.conf.get(\"spark.jdbc\")).option(\"databaseName\", spark.conf.get(\"spark.db\")).option(\"user\", spark.conf.get(\"spark.user\")).option(\"password\",spark.conf.get(\"spark.pass\")).option(\"dbtable\", fac_clcl_tables).load()\nfac_clcl_jdbcDF.createOrReplaceTempView(\"facets_claim_data\")\nval pmhs_clcl_jdbcDF \u003d sqlContext.read.format(\"jdbc\").option(\"driver\",spark.conf.get(\"spark.sql.driver\")).option(\"url\",spark.conf.get(\"spark.jdbc\")).option(\"databaseName\", spark.conf.get(\"spark.db\")).option(\"user\", spark.conf.get(\"spark.user\")).option(\"password\",spark.conf.get(\"spark.pass\")).option(\"dbtable\", pmhs_clcl_tables).load()\npmhs_clcl_jdbcDF.createOrReplaceTempView(\"pmhs_claim_data\")\nvar fac_result\u003d fac_clcl_jdbcDF.sqlContext.sql(s\"Select TOTAL_CHG , TOTAL_PAYABLE, CLAIM_INPUT_DT,CLAIM_MONTH,CLAIM_YEAR ,GROUP_ID,\u0027FACETS\u0027 AS SYSTEM from facets_claim_data where GROUP_ID in ($group_id) and CLAIM_INPUT_DT \u003e\u003d $Start_Date  and CLAIM_INPUT_DT \u003c\u003d $End_Date  \")\nvar pmhs_result\u003d pmhs_clcl_jdbcDF.sqlContext.sql(s\"Select TOTAL_CHG  , TOTAL_PAYABLE , CLAIM_INPUT_DT ,CLAIM_MONTH,CLAIM_YEAR,GROUP_ID,\u0027PMHS\u0027 AS SYSTEM from pmhs_claim_data  where GROUP_ID in ($group_id) and CLAIM_INPUT_DT \u003e\u003d $Start_Date  and CLAIM_INPUT_DT \u003c\u003d $End_Date \")\n\n\nz.show(fac_result.unionAll(pmhs_result))\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-10-11 17:18:39.624",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 362.017,
+              "optionOpen": true,
+              "setting": {
+                "stackedAreaChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default",
+                  "style": "stack"
+                },
+                "lineChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default",
+                  "stacked": false
+                },
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "TOTAL_CHG": "string",
+                      "TOTAL_PAYABLE": "string",
+                      "CLAIM_INPUT_DT": "string",
+                      "CLAIM_MONTH": "string",
+                      "CLAIM_YEAR": "string",
+                      "GROUP_ID": "string",
+                      "SYSTEM": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "CLAIM_MONTH",
+                  "index": 3.0,
+                  "aggr": "sum"
+                },
+                {
+                  "name": "CLAIM_YEAR",
+                  "index": 4.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [
+                {
+                  "name": "SYSTEM",
+                  "index": 6.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [
+                {
+                  "name": "TOTAL_CHG",
+                  "index": 0.0,
+                  "aggr": "sum"
+                },
+                {
+                  "name": "TOTAL_PAYABLE",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          },
+          "1": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {
+          "Goup ID": "\u002714149009\u0027",
+          "Group ID": "\u002714149106\u0027,\u002714149109\u0027,\u002714149110\u0027",
+          "Claims start date": "\u00272017-01-01\u0027",
+          "Claims end date": "\u00272017-12-31\u0027"
+        },
+        "forms": {
+          "Group ID": {
+            "type": "TextBox",
+            "name": "Group ID",
+            "displayName": "Group ID",
+            "defaultValue": "14149009",
+            "hidden": false
+          },
+          "Claims start date": {
+            "type": "TextBox",
+            "name": "Claims start date",
+            "displayName": "Claims start date",
+            "defaultValue": "01/01/2016",
+            "hidden": false
+          },
+          "Claims end date": {
+            "type": "TextBox",
+            "name": "Claims end date",
+            "displayName": "Claims end date",
+            "defaultValue": "01/01/2017",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "TOTAL_CHG\tTOTAL_PAYABLE\tCLAIM_INPUT_DT\tCLAIM_MONTH\tCLAIM_YEAR\tGROUP_ID\tSYSTEM\n313.5000\t0.0000\t2017-03-01 00:00:00.0\t3\t2017\t14149106\tFACETS\n88.5400\t10.8100\t2017-11-30 00:00:00.0\t11\t2017\t14149106\tFACETS\n124.8300\t34.9900\t2017-12-15 00:00:00.0\t12\t2017\t14149106\tFACETS\n31.9900\t31.9000\t2017-10-13 00:00:00.0\t10\t2017\t14149106\tFACETS\n556.0000\t114.8500\t2017-12-12 00:00:00.0\t12\t2017\t14149106\tFACETS\n75.0000\t0.0000\t2017-07-31 00:00:00.0\t7\t2017\t14149106\tFACETS\n933.0000\t226.0300\t2017-02-07 00:00:00.0\t2\t2017\t14149106\tFACETS\n2713.0000\t411.8600\t2017-02-07 00:00:00.0\t2\t2017\t14149106\tFACETS\n903.0000\t211.8000\t2017-02-07 00:00:00.0\t2\t2017\t14149106\tFACETS\n903.0000\t211.8000\t2017-02-07 00:00:00.0\t2\t2017\t14149106\tFACETS\n465.0000\t81.5100\t2017-02-08 00:00:00.0\t2\t2017\t14149106\tFACETS\n204.4000\t100.4000\t2017-01-04 00:00:00.0\t1\t2017\t14149106\tFACETS\n844.0000\t272.9900\t2017-01-05 00:00:00.0\t1\t2017\t14149106\tFACETS\n728.0000\t191.8700\t2017-01-10 00:00:00.0\t1\t2017\t14149106\tFACETS\n914.0000\t253.3500\t2017-01-18 00:00:00.0\t1\t2017\t14149106\tFACETS\n150.0000\t8.2500\t2017-01-18 00:00:00.0\t1\t2017\t14149106\tFACETS\n106.5000\t67.5000\t2017-03-14 00:00:00.0\t3\t2017\t14149106\tFACETS\n304.4300\t0.0000\t2017-02-08 00:00:00.0\t2\t2017\t14149106\tFACETS\n914.0000\t0.0000\t2017-02-10 00:00:00.0\t2\t2017\t14149106\tFACETS\n150.0000\t0.0000\t2017-02-10 00:00:00.0\t2\t2017\t14149106\tFACETS\n748.0000\t0.0000\t2017-02-20 00:00:00.0\t2\t2017\t14149106\tFACETS\n150.0000\t0.0000\t2017-02-20 00:00:00.0\t2\t2017\t14149106\tFACETS\n240.7000\t157.5000\t2017-03-07 00:00:00.0\t3\t2017\t14149106\tFACETS\n84.0000\t0.0000\t2017-03-10 00:00:00.0\t3\t2017\t14149106\tFACETS\n304.4300\t0.0000\t2017-03-23 00:00:00.0\t3\t2017\t14149106\tFACETS\n89.0000\t35.6800\t2017-03-29 00:00:00.0\t3\t2017\t14149106\tFACETS\n404.4300\t0.0000\t2017-03-30 00:00:00.0\t3\t2017\t14149106\tFACETS\n353.0000\t73.1900\t2017-04-04 00:00:00.0\t4\t2017\t14149106\tFACETS\n304.4300\t0.0000\t2017-04-10 00:00:00.0\t4\t2017\t14149106\tFACETS\n914.0000\t0.0000\t2017-04-18 00:00:00.0\t4\t2017\t14149106\tFACETS\n150.0000\t0.0000\t2017-04-18 00:00:00.0\t4\t2017\t14149106\tFACETS\n3896.0000\t2117.5900\t2017-07-05 00:00:00.0\t7\t2017\t14149106\tFACETS\n175.0000\t0.0000\t2017-07-05 00:00:00.0\t7\t2017\t14149106\tFACETS\n3896.0000\t0.0000\t2017-07-18 00:00:00.0\t7\t2017\t14149106\tFACETS\n3896.0000\t0.0000\t2017-07-31 00:00:00.0\t7\t2017\t14149106\tFACETS\n1720.0000\t0.0000\t2017-08-04 00:00:00.0\t8\t2017\t14149106\tFACETS\n353.0000\t0.0000\t2017-08-15 00:00:00.0\t8\t2017\t14149106\tFACETS\n528.0000\t0.0000\t2017-08-29 00:00:00.0\t8\t2017\t14149106\tFACETS\n2477.0000\t0.0000\t2017-09-04 00:00:00.0\t9\t2017\t14149106\tFACETS\n225.0000\t109.3400\t2017-09-11 00:00:00.0\t9\t2017\t14149106\tFACETS\n2477.0000\t1536.4300\t2017-09-19 00:00:00.0\t9\t2017\t14149106\tFACETS\n2477.0000\t0.0000\t2017-10-02 00:00:00.0\t10\t2017\t14149106\tFACETS\n353.0000\t73.1900\t2017-10-18 00:00:00.0\t10\t2017\t14149106\tFACETS\n353.0000\t0.0000\t2017-10-30 00:00:00.0\t10\t2017\t14149106\tFACETS\n235.3000\t0.0000\t2017-12-11 00:00:00.0\t12\t2017\t14149106\tFACETS\n353.0000\t73.1900\t2017-12-13 00:00:00.0\t12\t2017\t14149106\tFACETS\n353.0000\t0.0000\t2017-12-27 00:00:00.0\t12\t2017\t14149106\tFACETS\n338.0000\t87.4400\t2017-12-30 00:00:00.0\t12\t2017\t14149106\tFACETS\n319.1400\t113.9000\t2017-09-01 00:00:00.0\t9\t2017\t14149106\tFACETS\n44.9500\t0.0000\t2017-09-11 00:00:00.0\t9\t2017\t14149106\tFACETS\n199.1400\t53.9600\t2017-09-14 00:00:00.0\t9\t2017\t14149106\tFACETS\n180.0000\t31.0000\t2017-09-15 00:00:00.0\t9\t2017\t14149106\tFACETS\n1261.8000\t0.0000\t2017-10-18 00:00:00.0\t10\t2017\t14149106\tFACETS\n281.0000\t103.1900\t2017-10-18 00:00:00.0\t10\t2017\t14149106\tFACETS\n199.0000\t67.2900\t2017-10-31 00:00:00.0\t10\t2017\t14149106\tFACETS\n41.5200\t0.0000\t2017-12-11 00:00:00.0\t12\t2017\t14149106\tFACETS\n176.0000\t66.5000\t2017-12-12 00:00:00.0\t12\t2017\t14149106\tFACETS\n137.8200\t137.8200\t2017-12-12 00:00:00.0\t12\t2017\t14149106\tFACETS\n3.4600\t0.0000\t2017-12-13 00:00:00.0\t12\t2017\t14149106\tFACETS\n34.3600\t0.0000\t2017-12-15 00:00:00.0\t12\t2017\t14149106\tFACETS\n1928.4000\t329.7000\t2017-12-15 00:00:00.0\t12\t2017\t14149106\tFACETS\n7.5100\t7.2700\t2017-07-31 00:00:00.0\t7\t2017\t14149106\tFACETS\n125.7300\t125.7300\t2017-06-23 00:00:00.0\t6\t2017\t14149106\tFACETS\n92.0000\t0.0000\t2017-09-27 00:00:00.0\t9\t2017\t14149106\tFACETS\n338.0000\t0.0000\t2017-07-31 00:00:00.0\t7\t2017\t14149110\tFACETS\n89.0000\t0.0000\t2017-05-11 00:00:00.0\t5\t2017\t14149109\tFACETS\n336.5000\t103.1500\t2017-05-12 00:00:00.0\t5\t2017\t14149109\tFACETS\n69.0000\t39.7700\t2017-05-12 00:00:00.0\t5\t2017\t14149109\tFACETS\n225.5000\t80.6000\t2017-05-15 00:00:00.0\t5\t2017\t14149109\tFACETS\n224.0000\t101.0200\t2017-12-25 00:00:00.0\t12\t2017\t14149109\tFACETS\n76.0000\t15.3200\t2017-04-20 00:00:00.0\t4\t2017\t14149109\tFACETS\n73.0000\t0.0000\t2017-02-23 00:00:00.0\t2\t2017\t14149106\tFACETS\n73.0000\t0.0000\t2017-03-31 00:00:00.0\t3\t2017\t14149106\tFACETS\n56.0000\t45.0000\t2017-11-03 00:00:00.0\t11\t2017\t14149106\tFACETS\n48.0000\t40.4400\t2017-11-03 00:00:00.0\t11\t2017\t14149106\tFACETS\n112.9200\t0.0000\t2017-09-27 00:00:00.0\t9\t2017\t14149106\tFACETS\n182.2900\t76.2700\t2017-09-27 00:00:00.0\t9\t2017\t14149106\tFACETS\n274.7600\t70.0600\t2017-09-29 00:00:00.0\t9\t2017\t14149106\tFACETS\n50.0000\t40.4400\t2017-10-03 00:00:00.0\t10\t2017\t14149106\tFACETS\n222.8100\t43.6300\t2017-10-10 00:00:00.0\t10\t2017\t14149106\tFACETS\n200.0000\t106.6500\t2017-10-10 00:00:00.0\t10\t2017\t14149106\tFACETS\n110.0000\t37.8600\t2017-12-13 00:00:00.0\t12\t2017\t14149106\tFACETS\n110.0000\t32.2700\t2017-04-12 00:00:00.0\t4\t2017\t14149109\tFACETS\n915.0000\t17.4600\t2017-04-14 00:00:00.0\t4\t2017\t14149109\tFACETS\n1560.9200\t0.0000\t2017-04-18 00:00:00.0\t4\t2017\t14149109\tFACETS\n277.7000\t0.0000\t2017-07-14 00:00:00.0\t7\t2017\t14149109\tFACETS\n1560.9200\t0.0000\t2017-05-04 00:00:00.0\t5\t2017\t14149109\tFACETS\n31.0000\t0.0000\t2017-07-14 00:00:00.0\t7\t2017\t14149109\tFACETS\n59.0000\t37.0500\t2017-05-05 00:00:00.0\t5\t2017\t14149109\tFACETS\n322.0000\t0.0000\t2017-07-17 00:00:00.0\t7\t2017\t14149109\tFACETS\n297.0000\t0.0000\t2017-05-09 00:00:00.0\t5\t2017\t14149109\tFACETS\n212.0000\t0.0000\t2017-07-19 00:00:00.0\t7\t2017\t14149109\tFACETS\n314.0000\t0.0000\t2017-05-09 00:00:00.0\t5\t2017\t14149109\tFACETS\n212.0000\t0.0000\t2017-05-09 00:00:00.0\t5\t2017\t14149109\tFACETS\n19421.2500\t0.0000\t2017-07-19 00:00:00.0\t7\t2017\t14149109\tFACETS\n834.0000\t343.8000\t2017-05-10 00:00:00.0\t5\t2017\t14149109\tFACETS\n361.0000\t0.0000\t2017-07-20 00:00:00.0\t7\t2017\t14149109\tFACETS\n1279.0000\t0.0000\t2017-07-20 00:00:00.0\t7\t2017\t14149109\tFACETS\n222.0000\t0.0000\t2017-07-21 00:00:00.0\t7\t2017\t14149109\tFACETS\n642.0000\t0.0000\t2017-07-21 00:00:00.0\t7\t2017\t14149109\tFACETS\n1161.0000\t0.0000\t2017-07-24 00:00:00.0\t7\t2017\t14149109\tFACETS\n736.0000\t0.0000\t2017-07-24 00:00:00.0\t7\t2017\t14149109\tFACETS\n657.0000\t0.0000\t2017-07-26 00:00:00.0\t7\t2017\t14149109\tFACETS\n906.0000\t0.0000\t2017-07-26 00:00:00.0\t7\t2017\t14149109\tFACETS\n417.0000\t0.0000\t2017-12-21 00:00:00.0\t12\t2017\t14149106\tFACETS\n292.0000\t0.0000\t2017-12-21 00:00:00.0\t12\t2017\t14149106\tFACETS\n136.0000\t0.0000\t2017-07-25 00:00:00.0\t7\t2017\t14149106\tFACETS\n140.0000\t103.7800\t2017-11-03 00:00:00.0\t11\t2017\t14149106\tFACETS\n208.0000\t167.7800\t2017-12-27 00:00:00.0\t12\t2017\t14149106\tFACETS\n195.0000\t144.9500\t2017-11-03 00:00:00.0\t11\t2017\t14149106\tFACETS\n401.0000\t14.1700\t2017-11-07 00:00:00.0\t11\t2017\t14149106\tFACETS\n55.0000\t27.4000\t2017-11-17 00:00:00.0\t11\t2017\t14149106\tFACETS\n120.0000\t64.2400\t2017-11-28 00:00:00.0\t11\t2017\t14149106\tFACETS\n85.0000\t47.2700\t2017-12-06 00:00:00.0\t12\t2017\t14149106\tFACETS\n1850.0000\t0.0000\t2017-02-10 00:00:00.0\t2\t2017\t14149106\tFACETS\n175.0000\t71.2100\t2017-01-05 00:00:00.0\t1\t2017\t14149109\tFACETS\n323.0000\t204.9000\t2017-02-03 00:00:00.0\t2\t2017\t14149109\tFACETS\n100.0000\t55.0000\t2017-02-08 00:00:00.0\t2\t2017\t14149109\tFACETS\n100.0000\t32.2700\t2017-03-08 00:00:00.0\t3\t2017\t14149109\tFACETS\n100.0000\t32.2700\t2017-03-29 00:00:00.0\t3\t2017\t14149109\tFACETS\n1063.0000\t49.5700\t2017-04-07 00:00:00.0\t4\t2017\t14149109\tFACETS\n541.0000\t289.2400\t2017-04-11 00:00:00.0\t4\t2017\t14149109\tFACETS\n175.0000\t71.2100\t2017-04-26 00:00:00.0\t4\t2017\t14149109\tFACETS\n100.0000\t32.2700\t2017-05-30 00:00:00.0\t5\t2017\t14149109\tFACETS\n100.0000\t32.2700\t2017-06-28 00:00:00.0\t6\t2017\t14149109\tFACETS\n100.0000\t32.2700\t2017-08-10 00:00:00.0\t8\t2017\t14149109\tFACETS\n100.0000\t32.2700\t2017-08-30 00:00:00.0\t8\t2017\t14149109\tFACETS\n175.0000\t71.2100\t2017-11-02 00:00:00.0\t11\t2017\t14149109\tFACETS\n150.0000\t32.2700\t2017-11-29 00:00:00.0\t11\t2017\t14149109\tFACETS\n279.0000\t89.0000\t2017-04-21 00:00:00.0\t4\t2017\t14149109\tFACETS\n120.0000\t64.9300\t2017-06-06 00:00:00.0\t6\t2017\t14149109\tFACETS\n335.0000\t193.8900\t2017-09-18 00:00:00.0\t9\t2017\t14149109\tFACETS\n152.2300\t88.7800\t2017-09-27 00:00:00.0\t9\t2017\t14149109\tFACETS\n199.0000\t83.8600\t2017-10-03 00:00:00.0\t10\t2017\t14149109\tFACETS\n31.9900\t31.9000\t2017-10-23 00:00:00.0\t10\t2017\t14149109\tFACETS\n63.9900\t54.3500\t2017-10-23 00:00:00.0\t10\t2017\t14149109\tFACETS\n80.0000\t0.0000\t2017-10-31 00:00:00.0\t10\t2017\t14149109\tFACETS\n80.0000\t0.0000\t2017-11-17 00:00:00.0\t11\t2017\t14149109\tFACETS\n90.0000\t0.0000\t2017-12-01 00:00:00.0\t12\t2017\t14149109\tFACETS\n250.0000\t110.8000\t2017-10-30 00:00:00.0\t10\t2017\t14149109\tFACETS\n250.0000\t110.8000\t2017-11-22 00:00:00.0\t11\t2017\t14149109\tFACETS\n504.4300\t200.0000\t2017-03-30 00:00:00.0\t3\t2017\t14149106\tPMHS\n299.0000\t283.8600\t2017-10-03 00:00:00.0\t10\t2017\t14149109\tPMHS\n299.1400\t253.9600\t2017-09-14 00:00:00.0\t9\t2017\t14149106\tPMHS\n190.0000\t200.0000\t2017-12-01 00:00:00.0\t12\t2017\t14149109\tPMHS\n200.0000\t232.2700\t2017-06-28 00:00:00.0\t6\t2017\t14149109\tPMHS\n998.0000\t200.0000\t2017-02-20 00:00:00.0\t2\t2017\t14149106\tPMHS\n3996.0000\t200.0000\t2017-07-31 00:00:00.0\t7\t2017\t14149106\tPMHS\n173.0000\t200.0000\t2017-03-31 00:00:00.0\t3\t2017\t14149106\tPMHS\n304.4000\t300.4000\t2017-01-04 00:00:00.0\t1\t2017\t14149106\tPMHS\n408.7000\t200.0000\t2017-07-14 00:00:00.0\t7\t2017\t14149109\tPMHS\n661.0000\t367.7800\t2017-12-27 00:00:00.0\t12\t2017\t14149106\tPMHS\n2028.4000\t529.7000\t2017-12-15 00:00:00.0\t12\t2017\t14149106\tPMHS\n374.7600\t270.0600\t2017-09-29 00:00:00.0\t9\t2017\t14149106\tPMHS\n2577.0000\t1736.4300\t2017-09-19 00:00:00.0\t9\t2017\t14149106\tPMHS\n1660.9200\t200.0000\t2017-04-18 00:00:00.0\t4\t2017\t14149109\tPMHS\n453.0000\t200.0000\t2017-08-15 00:00:00.0\t8\t2017\t14149106\tPMHS\n438.0000\t287.4400\t2017-12-30 00:00:00.0\t12\t2017\t14149106\tPMHS\n180.0000\t200.0000\t2017-10-31 00:00:00.0\t10\t2017\t14149109\tPMHS\n2577.0000\t200.0000\t2017-09-04 00:00:00.0\t9\t2017\t14149106\tPMHS\n423.0000\t404.9000\t2017-02-03 00:00:00.0\t2\t2017\t14149109\tPMHS\n923.0000\t200.0000\t2017-05-09 00:00:00.0\t5\t2017\t14149109\tPMHS\n969.8200\t519.1700\t2017-12-12 00:00:00.0\t12\t2017\t14149106\tPMHS\n19733.2500\t200.0000\t2017-07-19 00:00:00.0\t7\t2017\t14149109\tPMHS\n1663.0000\t200.0000\t2017-07-26 00:00:00.0\t7\t2017\t14149109\tPMHS\n275.0000\t271.2100\t2017-04-26 00:00:00.0\t4\t2017\t14149109\tPMHS\n299.0000\t267.2900\t2017-10-31 00:00:00.0\t10\t2017\t14149106\tPMHS\n189.0000\t235.6800\t2017-03-29 00:00:00.0\t3\t2017\t14149106\tPMHS\n1740.0000\t200.0000\t2017-07-20 00:00:00.0\t7\t2017\t14149109\tPMHS\n155.0000\t227.4000\t2017-11-17 00:00:00.0\t11\t2017\t14149106\tPMHS\n200.0000\t255.0000\t2017-02-08 00:00:00.0\t2\t2017\t14149109\tPMHS\n220.0000\t264.9300\t2017-06-06 00:00:00.0\t6\t2017\t14149109\tPMHS\n275.0000\t271.2100\t2017-01-05 00:00:00.0\t1\t2017\t14149109\tPMHS\n438.0000\t200.0000\t2017-07-31 00:00:00.0\t7\t2017\t14149110\tPMHS\n1164.0000\t200.0000\t2017-04-18 00:00:00.0\t4\t2017\t14149106\tPMHS\n453.0000\t200.0000\t2017-10-30 00:00:00.0\t10\t2017\t14149106\tPMHS\n192.0000\t200.0000\t2017-09-27 00:00:00.0\t9\t2017\t14149106\tPMHS\n539.0000\t534.1700\t2017-11-03 00:00:00.0\t11\t2017\t14149106\tPMHS\n188.5400\t210.8100\t2017-11-30 00:00:00.0\t11\t2017\t14149106\tPMHS\n176.0000\t215.3200\t2017-04-20 00:00:00.0\t4\t2017\t14149109\tPMHS\n404.4300\t200.0000\t2017-03-23 00:00:00.0\t3\t2017\t14149106\tPMHS\n628.0000\t200.0000\t2017-08-29 00:00:00.0\t8\t2017\t14149106\tPMHS\n200.0000\t232.2700\t2017-08-10 00:00:00.0\t8\t2017\t14149109\tPMHS\n422.0000\t200.0000\t2017-07-17 00:00:00.0\t7\t2017\t14149109\tPMHS\n184.0000\t200.0000\t2017-03-10 00:00:00.0\t3\t2017\t14149106\tPMHS\n131.9900\t231.9000\t2017-10-13 00:00:00.0\t10\t2017\t14149106\tPMHS\n809.0000\t200.0000\t2017-12-21 00:00:00.0\t12\t2017\t14149106\tPMHS\n4171.0000\t2317.5900\t2017-07-05 00:00:00.0\t7\t2017\t14149106\tPMHS\n404.4300\t200.0000\t2017-02-08 00:00:00.0\t2\t2017\t14149106\tPMHS\n325.5000\t280.6000\t2017-05-15 00:00:00.0\t5\t2017\t14149109\tPMHS\n200.0000\t232.2700\t2017-03-08 00:00:00.0\t3\t2017\t14149109\tPMHS\n195.9800\t286.2500\t2017-10-23 00:00:00.0\t10\t2017\t14149109\tPMHS\n565.0000\t281.5100\t2017-02-08 00:00:00.0\t2\t2017\t14149106\tPMHS\n189.0000\t200.0000\t2017-05-11 00:00:00.0\t5\t2017\t14149109\tPMHS\n200.0000\t232.2700\t2017-08-30 00:00:00.0\t8\t2017\t14149109\tPMHS\n200.0000\t232.2700\t2017-03-29 00:00:00.0\t3\t2017\t14149109\tPMHS\n185.0000\t247.2700\t2017-12-06 00:00:00.0\t12\t2017\t14149106\tPMHS\n501.0000\t214.1700\t2017-11-07 00:00:00.0\t11\t2017\t14149106\tPMHS\n1015.0000\t217.4600\t2017-04-14 00:00:00.0\t4\t2017\t14149109\tPMHS\n350.0000\t310.8000\t2017-11-22 00:00:00.0\t11\t2017\t14149109\tPMHS\n150.0000\t240.4400\t2017-10-03 00:00:00.0\t10\t2017\t14149106\tPMHS\n182.5100\t207.2700\t2017-07-31 00:00:00.0\t7\t2017\t14149106\tPMHS\n641.0000\t489.2400\t2017-04-11 00:00:00.0\t4\t2017\t14149109\tPMHS\n944.0000\t472.9900\t2017-01-05 00:00:00.0\t1\t2017\t14149106\tPMHS\n566.4600\t311.0500\t2017-12-13 00:00:00.0\t12\t2017\t14149106\tPMHS\n250.0000\t232.2700\t2017-11-29 00:00:00.0\t11\t2017\t14149109\tPMHS\n5552.0000\t1261.4900\t2017-02-07 00:00:00.0\t2\t2017\t14149106\tPMHS\n3996.0000\t200.0000\t2017-07-18 00:00:00.0\t7\t2017\t14149106\tPMHS\n340.7000\t357.5000\t2017-03-07 00:00:00.0\t3\t2017\t14149106\tPMHS\n1820.0000\t200.0000\t2017-08-04 00:00:00.0\t8\t2017\t14149106\tPMHS\n395.2100\t276.2700\t2017-09-27 00:00:00.0\t9\t2017\t14149106\tPMHS\n522.8100\t350.2800\t2017-10-10 00:00:00.0\t10\t2017\t14149106\tPMHS\n828.0000\t391.8700\t2017-01-10 00:00:00.0\t1\t2017\t14149106\tPMHS\n964.0000\t200.0000\t2017-07-21 00:00:00.0\t7\t2017\t14149109\tPMHS\n1997.0000\t200.0000\t2017-07-24 00:00:00.0\t7\t2017\t14149109\tPMHS\n210.0000\t232.2700\t2017-04-12 00:00:00.0\t4\t2017\t14149109\tPMHS\n369.9500\t309.3400\t2017-09-11 00:00:00.0\t9\t2017\t14149106\tPMHS\n220.0000\t264.2400\t2017-11-28 00:00:00.0\t11\t2017\t14149106\tPMHS\n252.2300\t288.7800\t2017-09-27 00:00:00.0\t9\t2017\t14149109\tPMHS\n200.0000\t232.2700\t2017-05-30 00:00:00.0\t5\t2017\t14149109\tPMHS\n413.5000\t200.0000\t2017-03-01 00:00:00.0\t3\t2017\t14149106\tPMHS\n1950.0000\t200.0000\t2017-02-10 00:00:00.0\t2\t2017\t14149106\tPMHS\n1995.8000\t376.3800\t2017-10-18 00:00:00.0\t10\t2017\t14149106\tPMHS\n435.0000\t393.8900\t2017-09-18 00:00:00.0\t9\t2017\t14149109\tPMHS\n404.4300\t200.0000\t2017-04-10 00:00:00.0\t4\t2017\t14149106\tPMHS\n259.1900\t234.9900\t2017-12-15 00:00:00.0\t12\t2017\t14149106\tPMHS\n350.0000\t310.8000\t2017-10-30 00:00:00.0\t10\t2017\t14149109\tPMHS\n159.0000\t237.0500\t2017-05-05 00:00:00.0\t5\t2017\t14149109\tPMHS\n419.1400\t313.9000\t2017-09-01 00:00:00.0\t9\t2017\t14149106\tPMHS\n206.5000\t267.5000\t2017-03-14 00:00:00.0\t3\t2017\t14149106\tPMHS\n236.0000\t200.0000\t2017-07-25 00:00:00.0\t7\t2017\t14149106\tPMHS\n275.0000\t271.2100\t2017-11-02 00:00:00.0\t11\t2017\t14149109\tPMHS\n453.0000\t273.1900\t2017-04-04 00:00:00.0\t4\t2017\t14149106\tPMHS\n324.0000\t301.0200\t2017-12-25 00:00:00.0\t12\t2017\t14149109\tPMHS\n1164.0000\t200.0000\t2017-02-10 00:00:00.0\t2\t2017\t14149106\tPMHS\n1163.0000\t249.5700\t2017-04-07 00:00:00.0\t4\t2017\t14149109\tPMHS\n1660.9200\t200.0000\t2017-05-04 00:00:00.0\t5\t2017\t14149109\tPMHS\n934.0000\t543.8000\t2017-05-10 00:00:00.0\t5\t2017\t14149109\tPMHS\n1164.0000\t461.6000\t2017-01-18 00:00:00.0\t1\t2017\t14149106\tPMHS\n505.5000\t342.9200\t2017-05-12 00:00:00.0\t5\t2017\t14149109\tPMHS\n180.0000\t200.0000\t2017-11-17 00:00:00.0\t11\t2017\t14149109\tPMHS\n379.0000\t289.0000\t2017-04-21 00:00:00.0\t4\t2017\t14149109\tPMHS\n376.8200\t200.0000\t2017-12-11 00:00:00.0\t12\t2017\t14149106\tPMHS\n225.7300\t325.7300\t2017-06-23 00:00:00.0\t6\t2017\t14149106\tPMHS\n280.0000\t231.0000\t2017-09-15 00:00:00.0\t9\t2017\t14149106\tPMHS\n2577.0000\t200.0000\t2017-10-02 00:00:00.0\t10\t2017\t14149106\tPMHS\n173.0000\t200.0000\t2017-02-23 00:00:00.0\t2\t2017\t14149106\tPMHS\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1534359164005_220555720",
+      "id": "20180815-145244_644790121",
+      "dateCreated": "2018-08-15 14:52:44.005",
+      "dateStarted": "2018-08-28 16:39:33.654",
+      "dateFinished": "2018-08-28 16:39:59.669",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-08-16 14:02:40.768",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1534261680220_1063708663",
+      "id": "20180814-114800_1468094235",
+      "dateCreated": "2018-08-14 11:48:00.220",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-08-16 14:02:40.869",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1534278109900_-109948999",
+      "id": "20180814-162149_2145259597",
+      "dateCreated": "2018-08-14 16:21:49.900",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Claims trend report",
+  "id": "2DQVVBTGP",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "md:shared_process": [],
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": true,
+    "looknfeel": "default",
+    "personalizedMode": "false"
+  },
+  "info": {}
+}
